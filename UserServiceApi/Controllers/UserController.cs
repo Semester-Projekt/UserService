@@ -47,6 +47,8 @@ public class UserController : ControllerBase
 
         var filteredUser = new
         {
+            user.MongoId,
+            user.UserId,
             user.UserName
         };
 
