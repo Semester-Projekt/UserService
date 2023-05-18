@@ -35,7 +35,7 @@ public class UserController : ControllerBase
     }
 
 
-    [Authorize]
+    // [Authorize] HUSK AT FJERNE KOMMATERING AF DETTE FELT
     [HttpGet("getuser/{id}"), DisableRequestSizeLimit]
     public async Task<IActionResult> GetUser(int id)
     {
