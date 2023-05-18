@@ -43,17 +43,7 @@ public class UserController : ControllerBase
         
         var user = await _userRepository.GetUser(id);
 
-        
-
-        var filteredUser = new
-        {
-            user.MongoId,
-            user.UserId,
-            user.UserName
-        };
-
-
-        return Ok(filteredUser);
+        return Ok(user);
     }
 
 
