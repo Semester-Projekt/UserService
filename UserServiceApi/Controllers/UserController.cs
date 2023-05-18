@@ -35,6 +35,30 @@ public class UserController : ControllerBase
     }
 
 
+    [Authorize]
+    [HttpGet("getuser/{id}"), DisableRequestSizeLimit]
+    public async Task<IActionResult> GetUser(int id)
+    {
+        _logger.LogInformation("getUser function hit");
+        
+        var user = await _userRepository.GetUser(id);
+
+        
+
+        var filteredUser = new
+        {
+            user.UserName
+        };
+
+
+        return Ok(filteredUser);
+    }
+
+
+
+
+
+    [Authorize]
     [HttpPost("addNewUser"), DisableRequestSizeLimit]
     public async Task<IActionResult> Post([FromBody] User? user)
     {
