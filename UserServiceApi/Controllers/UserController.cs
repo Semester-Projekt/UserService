@@ -43,6 +43,13 @@ public class UserController : ControllerBase
         
         var user = await _userRepository.GetUser(id);
 
+        var filteredUser = new
+        {
+            user.UserName,
+            user.UserEmail,
+            user.UserPhone
+        };
+
         return Ok(user);
     }
 
