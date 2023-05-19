@@ -20,7 +20,7 @@ namespace Model
             _user = database.GetCollection<User>("Users");
         }
         
-
+        
         public async Task<User> FindUserByUsernameAndPassword(string userName, string userPassword)
         {
             var filter = Builders<User>.Filter.Eq("UserName", userName) & Builders<User>.Filter.Eq("UserPassword", userPassword);
@@ -28,6 +28,10 @@ namespace Model
         }
 
 
+
+
+
+        //GET
         public async Task<User> GetUser(int id)
         {
             var filter = Builders<User>.Filter.Eq("UserId", id);
@@ -37,9 +41,42 @@ namespace Model
 
 
 
+
+
+        //POST
         public void AddNewUser(User user)
         {
             _user.InsertOne(user);
+        }
+
+
+        
+
+
+
+        //PUT
+        public async Task UpdateUser(int userId, User user)
+        {
+            var filter = Builders<User>.Filter.Eq(a => a.UserId, userId);
+            var update = Builders<User>.Update.
+                Set(a => a.UserName, user.UserName).
+                Set(a => a.UserPassword, user.UserPassword).
+                Set(a => a.UserEmail, user.UserEmail).
+                Set(a => a.UserPhone, user.UserPhone);
+
+            await _user.UpdateOneAsync(filter, update);
+        }
+
+
+
+
+
+
+        //DELETE
+        public async Task DeleteUser(int userId)
+        {
+            var filter = Builders<User>.Filter.Eq(a => a.UserId, userId);
+            await _user.DeleteOneAsync(filter);
         }
     }
 }
