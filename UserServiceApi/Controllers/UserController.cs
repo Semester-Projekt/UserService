@@ -35,7 +35,7 @@ public class UserController : ControllerBase
     }
 
 
-    [Authorize]
+    // [Authorize] HUSK AT FJERNE KOMMATERING AF DETTE FELT
     [HttpGet("getuser/{id}"), DisableRequestSizeLimit]
     public async Task<IActionResult> GetUser(int id)
     {
@@ -43,15 +43,14 @@ public class UserController : ControllerBase
         
         var user = await _userRepository.GetUser(id);
 
-        
-
         var filteredUser = new
         {
-            user.UserName
+            user.UserName,
+            user.UserEmail,
+            user.UserPhone
         };
 
-
-        return Ok(filteredUser);
+        return Ok(user);
     }
 
 
