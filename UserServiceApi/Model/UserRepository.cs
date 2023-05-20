@@ -32,21 +32,27 @@ namespace Model
 
 
         //GET
-        public async Task<User> GetUser(int id)
+        public async Task<User> GetUserById(int id)
         {
             var filter = Builders<User>.Filter.Eq("UserId", id);
             return await _user.Find(filter).FirstOrDefaultAsync();
         }
 
+        public int GetNextUserId()
+        {
+            var lastUser = _user.AsQueryable().OrderByDescending(a => a.UserId).FirstOrDefault();
+            return (lastUser != null) ? lastUser.UserId + 1 : 1;
+        }
 
 
 
 
+        
 
         //POST
-        public void AddNewUser(User user)
+        public void AddNewUser(User? user)
         {
-            _user.InsertOne(user);
+            _user.InsertOne(user!);
         }
 
 
@@ -63,7 +69,7 @@ namespace Model
                 Set(a => a.UserPassword, user.UserPassword).
                 Set(a => a.UserEmail, user.UserEmail).
                 Set(a => a.UserPhone, user.UserPhone);
-
+            
             await _user.UpdateOneAsync(filter, update);
         }
 
