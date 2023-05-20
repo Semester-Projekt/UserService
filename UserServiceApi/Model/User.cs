@@ -12,9 +12,9 @@ namespace Model
 		[BsonId]
 		[BsonRepresentation(BsonType.ObjectId)]
 		public string? MongoId { get; set; }
-
+		
 		[BsonElement("UserId")]
-		public long UserId { get; set; } // skal måske være en 'int'?
+		public int UserId { get; set; } // skal måske være en 'int'?
 
         [BsonElement("UserName")]
         public string UserName { get; set; }
@@ -31,8 +31,9 @@ namespace Model
         [BsonElement("UserAddress")]
         public string? UserAddress { get; set; }
 
-        public User(string userName, string userPassword, string userEmail, int userPhone, string userAddress)
+        public User(int userId, string userName, string userPassword, string userEmail, int userPhone, string userAddress)
         {
+			this.UserId = userId;
 			this.UserName = userName;
 			this.UserPassword = userPassword;
 			this.UserEmail = userEmail;
