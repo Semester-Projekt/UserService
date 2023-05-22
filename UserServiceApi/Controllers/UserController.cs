@@ -55,7 +55,6 @@ public class UserController : ControllerBase
 
 
     //GET
-    // [Authorize] HUSK AT FJERNE KOMMATERING AF DETTE FELT
     [HttpGet("getuser/{id}"), DisableRequestSizeLimit]
     public async Task<IActionResult> GetUserById(int id)
     {
@@ -72,7 +71,6 @@ public class UserController : ControllerBase
 
 
     //POST
-    [Authorize]
     [HttpPost("addNewUser"), DisableRequestSizeLimit]
     public IActionResult AddNewUser([FromBody] User? user)
     {
@@ -112,7 +110,6 @@ public class UserController : ControllerBase
 
 
     //PUT
-    [Authorize]
     [HttpPut("updateUser/{userId}"), DisableRequestSizeLimit]
     public async Task<IActionResult> UpdateUser(int userId, User? user)
     {
@@ -139,7 +136,6 @@ public class UserController : ControllerBase
 
 
     //DELETE
-    [Authorize]
     [HttpDelete("deleteUser/{userId}"), DisableRequestSizeLimit]
     public async Task<IActionResult> DeleteUser(int userId)
     {
