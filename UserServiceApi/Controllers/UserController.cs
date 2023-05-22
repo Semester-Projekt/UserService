@@ -126,7 +126,7 @@ public class UserController : ControllerBase
         _logger.LogInformation("nyt user objekt added til User list");
 
 
-        return Ok(newUser);
+        return Ok("add done");
     }
 
 
@@ -152,7 +152,7 @@ public class UserController : ControllerBase
 
         var newUpdatedUser = await _userRepository.GetUserById(userId);
 
-        return Ok(newUpdatedUser);
+        return Ok("update done");
     }
 
 

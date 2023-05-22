@@ -39,7 +39,6 @@ namespace Model
             Console.WriteLine("repository - GetUserById");
             Console.WriteLine("id: " + userId);
             Console.WriteLine("database: " + _user);
-            Console.WriteLine(filter);
 
             return await _user.Find(filter).FirstOrDefaultAsync();
         }
