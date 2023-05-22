@@ -46,11 +46,29 @@ public class UserController : ControllerBase
         var ips = System.Net.Dns.GetHostAddresses(hostName);
         var _ipaddr = ips.First().MapToIPv4().ToString();
         _logger.LogInformation(1, $"Auth service responding from {_ipaddr}");
-        Console.WriteLine(_userRepository.GetUserById(1));
+        Console.WriteLine("UserController: " + _userRepository.GetUserById(1).Result.UserName);
 
     }
 
 
+
+    [HttpGet("version")]
+    public IActionResult GetVersion()
+    {
+        var assembly = typeof(Program).Assembly;
+
+
+        var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        var description = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>()?.Description;
+
+        var versionInfo = new
+        {
+            InformationalVersion = informationalVersion,
+            Description = description
+        };
+
+        return Ok(versionInfo);
+    }
 
 
 
