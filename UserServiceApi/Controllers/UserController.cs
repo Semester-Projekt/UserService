@@ -60,7 +60,11 @@ public class UserController : ControllerBase
     {
         _logger.LogInformation("getUser function hit");
 
+        _logger.LogInformation("still in getUser func");
+
         var user = await _userRepository.GetUserById(id);
+
+        _logger.LogInformation("after loading user: " + user.UserName);
 
         return Ok(user);
     }
