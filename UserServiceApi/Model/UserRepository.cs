@@ -18,7 +18,6 @@ namespace Model
             var client = new MongoClient(connectionString);
             var database = client.GetDatabase("User"); // vores database
             _user = database.GetCollection<User>("Users");
-            Console.WriteLine("mongo conn string: " + connectionString);
         }
         
         

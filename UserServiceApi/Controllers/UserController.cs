@@ -46,7 +46,6 @@ public class UserController : ControllerBase
         var ips = System.Net.Dns.GetHostAddresses(hostName);
         var _ipaddr = ips.First().MapToIPv4().ToString();
         _logger.LogInformation(1, $"Auth service responding from {_ipaddr}");
-        Console.WriteLine("UserController: " + _userRepository.GetUserById(1).Result.UserName);
 
     }
 
