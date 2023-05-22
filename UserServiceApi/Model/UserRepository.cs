@@ -33,12 +33,13 @@ namespace Model
 
 
         //GET
-        public async Task<User> GetUserById(int id)
+        public async Task<User> GetUserById(int userId)
         {
-            var filter = Builders<User>.Filter.Eq("UserId", id);
+            var filter = Builders<User>.Filter.Eq("UserId", userId);
             Console.WriteLine("repository - GetUserById");
-            Console.WriteLine("id: " + id);
+            Console.WriteLine("id: " + userId);
             Console.WriteLine("database: " + _user);
+            Console.WriteLine(filter);
 
             return await _user.Find(filter).FirstOrDefaultAsync();
         }

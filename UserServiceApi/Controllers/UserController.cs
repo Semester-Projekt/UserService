@@ -46,6 +46,7 @@ public class UserController : ControllerBase
         var ips = System.Net.Dns.GetHostAddresses(hostName);
         var _ipaddr = ips.First().MapToIPv4().ToString();
         _logger.LogInformation(1, $"Auth service responding from {_ipaddr}");
+        Console.WriteLine(_userRepository.GetUserById(1));
 
     }
 
@@ -55,14 +56,16 @@ public class UserController : ControllerBase
 
 
     //GET
-    [HttpGet("getuser/{id}"), DisableRequestSizeLimit]
-    public async Task<IActionResult> GetUserById(int id)
+    [HttpGet("getuser/{userId}"), DisableRequestSizeLimit]
+    public async Task<IActionResult> GetUserById(int userId)
     {
         _logger.LogInformation("getUser function hit");
-
+        
         _logger.LogInformation("still in getUser func");
 
-        var user = await _userRepository.GetUserById(id);
+        _logger.LogInformation("userController - userId: " + userId);
+
+        var user = await _userRepository.GetUserById(userId);
 
         _logger.LogInformation("after loading user: " + user.UserName);
 
