@@ -32,6 +32,11 @@ namespace Model
 
 
         //GET
+        public async Task<List<User>> GetAllUsers()
+        {
+            return await _user.Aggregate().ToListAsync();
+        }
+
         public async Task<User> GetUserById(int userId)
         {
             var filter = Builders<User>.Filter.Eq("UserId", userId);

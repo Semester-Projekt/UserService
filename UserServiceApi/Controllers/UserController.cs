@@ -32,7 +32,7 @@ public class UserController : ControllerBase
     private readonly IConfiguration _config;
     private UserRepository _userRepository;
 
-//docker build test
+    //docker build test
 
     public UserController(ILogger<UserController> logger, IConfiguration config, UserRepository userRepository)
     {
@@ -76,17 +76,15 @@ public class UserController : ControllerBase
     [HttpGet("getuser/{userId}"), DisableRequestSizeLimit]
     public async Task<IActionResult> GetUserById(int userId)
     {
-        _logger.LogInformation("getUser function hit");
-        
-        _logger.LogInformation("still in getUser func");
+        _logger.LogInformation("userController - getUser function hit");
 
         _logger.LogInformation("userController - userId: " + userId);
 
-        var user = await _userRepository.GetUserById(userId);
+        var user = await _userRepository.GetUserById(userId); // gets user from collection using repository method
 
         _logger.LogInformation("after loading user: " + user.UserName);
 
-        return Ok(user);
+        return Ok(user); // returns an OK statuscode, along with the entire user object
     }
 
 
@@ -96,7 +94,7 @@ public class UserController : ControllerBase
 
     //POST
     [HttpPost("addNewUser"), DisableRequestSizeLimit]
-    public IActionResult AddNewUser([FromBody] User? user)
+    public async Task<IActionResult> AddNewUser([FromBody] User? user)
     {
         _logger.LogInformation("AddNewUser funk ramt");
 
@@ -104,7 +102,7 @@ public class UserController : ControllerBase
 
         var newUser = new User
         {
-            UserId = latestID,
+            UserId = latestID, // sets the newUser ID as the next one in the collection
             UserName = user!.UserName,
             UserPassword = user.UserPassword,
             UserEmail = user.UserEmail,
@@ -113,17 +111,35 @@ public class UserController : ControllerBase
         };
         _logger.LogInformation("Nyt user objekt lavet, name: " + user.UserName);
 
-        if (user.UserId == null)
+        var allUsers = await _userRepository.GetAllUsers();
+
+        _logger.LogInformation("UserService - total users: " + allUsers.Count);
+
+        bool userNameTaken = false;
+
+        foreach (var bruger in allUsers)
+        {
+            if (bruger.UserName == user.UserName)
+            {
+                userNameTaken = true;
+                break;
+            }
+        }
+
+        if (newUser.UserId == null)
         {
             return BadRequest("UserId is null");
+        }
+        else if (userNameTaken)
+        {
+            return BadRequest("UserName is taken");
         }
         else
         {
             _userRepository.AddNewUser(newUser);
         }
 
-        _logger.LogInformation("nyt user objekt added til User list");
-
+        _logger.LogInformation("new user object added to User list");
 
         return Ok(newUser);
     }
@@ -139,7 +155,7 @@ public class UserController : ControllerBase
     {
         _logger.LogInformation("UpdateUser function hit");
 
-        var updatedUser = _userRepository.GetUserById(userId);
+        var updatedUser = _userRepository.GetUserById(userId); // retreives the desired user from the collection
 
         if (updatedUser == null)
         {
@@ -149,9 +165,9 @@ public class UserController : ControllerBase
 
         await _userRepository.UpdateUser(userId, user!);
 
-        var newUpdatedUser = await _userRepository.GetUserById(userId);
+        var newUpdatedUser = await _userRepository.GetUserById(userId); // creates an object containing the updatedUser info
 
-        return Ok(newUpdatedUser);
+        return Ok(newUpdatedUser); // returns an OK statuscode along with the newUpdatedUser object
     }
 
 
@@ -167,15 +183,57 @@ public class UserController : ControllerBase
 
         var deletedUser = _userRepository.GetUserById(userId);
 
-        if (deletedUser == null)
+        using (HttpClient client = new HttpClient())
         {
-            return BadRequest("User does not exist");
+            string catalogueServiceUrl = "http://localhost:5004";
+            // string catalogueServiceUrl = "http://user:80";
+            string getCatalogueEndpoint = "/catalogue/getAllArtifacts";
+
+            _logger.LogInformation(catalogueServiceUrl + getCatalogueEndpoint);
+
+            HttpResponseMessage response = await client.GetAsync(catalogueServiceUrl + getCatalogueEndpoint);
+            if (!response.IsSuccessStatusCode)
+            {
+                return StatusCode((int)response.StatusCode, "Failed to retrieve UserId from UserService");
+            }
+
+            var catalogueResponse = await response.Content.ReadFromJsonAsync<List<ArtifactDTO>>();
+
+            List<ArtifactDTO> nonDeletedArtifacts = (List<ArtifactDTO>)catalogueResponse.Where(s => s.Status != "Deleted").ToList();
+            _logger.LogInformation("" + nonDeletedArtifacts.Count);
+
+            List<ArtifactDTO> usersArtifacts = new List<ArtifactDTO>();
+
+            for (int i = 0; i < nonDeletedArtifacts.Count(); i++)
+            {
+                if (nonDeletedArtifacts[i].ArtifactOwner.UserName == deletedUser.Result.UserName)
+                {
+                    usersArtifacts.Add(nonDeletedArtifacts[i]);
+                }
+            }
+            _logger.LogInformation("UsersArtifactsCount: " + usersArtifacts.Count);
+
+
+            
+
+            if (deletedUser == null)
+            {
+                return BadRequest("User does not exist");
+            }
+            else if (usersArtifacts.Count > 0)
+            {
+                return BadRequest("You have active artifacts in the database and there cannot delete your user");
+            }
+
+            else
+            {
+                _logger.LogInformation("User for deletion: " + deletedUser.Result.UserName);
+
+                await _userRepository.DeleteUser(userId);
+
+                return Ok("User deleted");
+            }
         }
-        _logger.LogInformation("User for deletion: " + deletedUser.Result.UserName);
-
-        await _userRepository.DeleteUser(userId);
-
-        return Ok("User deleted");
     }
 
 }
