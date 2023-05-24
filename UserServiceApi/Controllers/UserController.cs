@@ -185,8 +185,8 @@ public class UserController : ControllerBase
 
         using (HttpClient client = new HttpClient())
         {
-            string catalogueServiceUrl = "http://localhost:5004";
-            // string catalogueServiceUrl = "http://user:80";
+            // string catalogueServiceUrl = "http://localhost:5004";
+            string catalogueServiceUrl = "http://user:80";
             string getCatalogueEndpoint = "/catalogue/getAllArtifacts";
 
             _logger.LogInformation(catalogueServiceUrl + getCatalogueEndpoint);
