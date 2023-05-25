@@ -32,9 +32,18 @@ namespace Model
 
 
         //GET
-        public async Task<User> GetUserById(int id)
+        public async Task<List<User>> GetAllUsers()
         {
-            var filter = Builders<User>.Filter.Eq("UserId", id);
+            return await _user.Aggregate().ToListAsync();
+        }
+
+        public async Task<User> GetUserById(int userId)
+        {
+            var filter = Builders<User>.Filter.Eq("UserId", userId);
+            Console.WriteLine("repository - GetUserById");
+            Console.WriteLine("id: " + userId);
+            Console.WriteLine("database: " + _user);
+
             return await _user.Find(filter).FirstOrDefaultAsync();
         }
 
@@ -50,9 +59,9 @@ namespace Model
         
 
         //POST
-        public void AddNewUser(User? user)
+        public async Task AddNewUser(User? user)
         {
-            _user.InsertOne(user!);
+            await Task.Run(() => _user.InsertOne(user!));
         }
 
 
