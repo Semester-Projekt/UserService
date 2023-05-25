@@ -1,6 +1,10 @@
+using NUnit.Framework;
+using Moq;
+
+
 namespace UserServiceApi.Test;
 
-public class Tests
+public class UserControllerTests
 {
     [SetUp]
     public void Setup()
