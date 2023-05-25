@@ -59,9 +59,9 @@ namespace Model
         
 
         //POST
-        public void AddNewUser(User? user)
+        public async Task AddNewUser(User? user)
         {
-            _user.InsertOne(user!);
+            await Task.Run(() => _user.InsertOne(user!));
         }
 
 
