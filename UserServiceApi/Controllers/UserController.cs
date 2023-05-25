@@ -103,7 +103,11 @@ public class UserController : ControllerBase
     {
         _logger.LogInformation("userController - AddNewUser funk ramt");
 
-        int latestID = _userRepository.GetNextUserId(); // Gets latest ID in _artifacts + 1
+        var allUsers = await _userRepository.GetAllUsers();
+        
+        _logger.LogInformation("UserService - total users: " + allUsers.Count);
+
+        int latestID = await _userRepository.GetNextUserId(); // Gets latest ID in _artifacts + 1
 
         var newUser = new User
         {
@@ -119,9 +123,6 @@ public class UserController : ControllerBase
         _logger.LogInformation("userController - user mongo id: " + user.MongoId);
         _logger.LogInformation("userController - newuser mongo id: " + newUser.MongoId);
 
-        var allUsers = await _userRepository.GetAllUsers();
-
-        _logger.LogInformation("UserService - total users: " + allUsers.Count);
 
         bool userNameTaken = false;
 

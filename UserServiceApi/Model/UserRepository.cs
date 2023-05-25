@@ -47,7 +47,7 @@ namespace Model
             return await _user.Find(filter).FirstOrDefaultAsync();
         }
 
-        public int GetNextUserId()
+        public async Task<int> GetNextUserId()
         {
             var lastUser = _user.AsQueryable().OrderByDescending(a => a.UserId).FirstOrDefault();
             return (lastUser != null) ? lastUser.UserId + 1 : 1;
