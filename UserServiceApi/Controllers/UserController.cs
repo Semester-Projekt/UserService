@@ -82,7 +82,12 @@ public class UserController : ControllerBase
 
         var user = await _userRepository.GetUserById(userId); // gets user from collection using repository method
 
-        _logger.LogInformation("after loading user: " + user.UserName);
+        if (user == null)
+        {
+            return BadRequest("userController - user does not exist");
+        }
+
+        _logger.LogInformation("userController - after loading user: " + user.UserName);
 
         return Ok(user); // returns an OK statuscode, along with the entire user object
     }
@@ -96,7 +101,7 @@ public class UserController : ControllerBase
     [HttpPost("addNewUser"), DisableRequestSizeLimit]
     public async Task<IActionResult> AddNewUser([FromBody] User? user)
     {
-        _logger.LogInformation("AddNewUser funk ramt");
+        _logger.LogInformation("userController - AddNewUser funk ramt");
 
         int latestID = _userRepository.GetNextUserId(); // Gets latest ID in _artifacts + 1
 
@@ -109,7 +114,10 @@ public class UserController : ControllerBase
             UserPhone = user.UserPhone,
             UserAddress = user.UserAddress
         };
-        _logger.LogInformation("Nyt user objekt lavet, name: " + user.UserName);
+        _logger.LogInformation("userController - Nyt user objekt lavet, name: " + user.UserName);
+
+        _logger.LogInformation("userController - user mongo id: " + user.MongoId);
+        _logger.LogInformation("userController - newuser mongo id: " + newUser.MongoId);
 
         var allUsers = await _userRepository.GetAllUsers();
 
@@ -128,18 +136,18 @@ public class UserController : ControllerBase
 
         if (newUser.UserId == null)
         {
-            return BadRequest("UserId is null");
+            return BadRequest("userController - UserId is null");
         }
         else if (userNameTaken)
         {
-            return BadRequest("UserName is taken");
+            return BadRequest("userController - UserName is taken");
         }
         else
         {
             _userRepository.AddNewUser(newUser);
         }
 
-        _logger.LogInformation("new user object added to User list");
+        _logger.LogInformation("userController - new user object added to User list");
 
         return Ok(newUser);
     }
@@ -153,15 +161,15 @@ public class UserController : ControllerBase
     [HttpPut("updateUser/{userId}"), DisableRequestSizeLimit]
     public async Task<IActionResult> UpdateUser(int userId, User? user)
     {
-        _logger.LogInformation("UpdateUser function hit");
+        _logger.LogInformation("userController - UpdateUser function hit");
 
         var updatedUser = _userRepository.GetUserById(userId); // retreives the desired user from the collection
 
         if (updatedUser == null)
         {
-            return BadRequest("User does not exist");
+            return BadRequest("userController - User does not exist");
         }
-        _logger.LogInformation("User for update: " + updatedUser.Result.UserName);
+        _logger.LogInformation("userController - User for update: " + updatedUser.Result.UserName);
 
         await _userRepository.UpdateUser(userId, user!);
 
@@ -179,14 +187,15 @@ public class UserController : ControllerBase
     [HttpDelete("deleteUser/{userId}"), DisableRequestSizeLimit]
     public async Task<IActionResult> DeleteUser(int userId)
     {
-        _logger.LogInformation("DeleteUser function hit");
+        _logger.LogInformation("userController - DeleteUser function hit");
 
         var deletedUser = _userRepository.GetUserById(userId);
 
         using (HttpClient client = new HttpClient())
         {
-            // string catalogueServiceUrl = "http://localhost:5004";
-            string catalogueServiceUrl = "http://user:80";
+            //string catalogueServiceUrl = "http://localhost:4000";
+            //string catalogueServiceUrl = "http://catalogue:80";
+            string catalogueServiceUrl = Environment.GetEnvironmentVariable("CATALOGUE_SERVICE_URL");
             string getCatalogueEndpoint = "/catalogue/getAllArtifacts";
 
             _logger.LogInformation(catalogueServiceUrl + getCatalogueEndpoint);
@@ -194,7 +203,7 @@ public class UserController : ControllerBase
             HttpResponseMessage response = await client.GetAsync(catalogueServiceUrl + getCatalogueEndpoint);
             if (!response.IsSuccessStatusCode)
             {
-                return StatusCode((int)response.StatusCode, "Failed to retrieve UserId from UserService");
+                return StatusCode((int)response.StatusCode, "userController - Failed to retrieve UserId from UserService");
             }
 
             var catalogueResponse = await response.Content.ReadFromJsonAsync<List<ArtifactDTO>>();
@@ -211,27 +220,27 @@ public class UserController : ControllerBase
                     usersArtifacts.Add(nonDeletedArtifacts[i]);
                 }
             }
-            _logger.LogInformation("UsersArtifactsCount: " + usersArtifacts.Count);
+            _logger.LogInformation("userController - UsersArtifactsCount: " + usersArtifacts.Count);
 
 
             
 
             if (deletedUser == null)
             {
-                return BadRequest("User does not exist");
+                return BadRequest("userController - User does not exist");
             }
             else if (usersArtifacts.Count > 0)
             {
-                return BadRequest("You have active artifacts in the database and there cannot delete your user");
+                return BadRequest("userController - You have active artifacts in the database and there cannot delete your user");
             }
 
             else
             {
-                _logger.LogInformation("User for deletion: " + deletedUser.Result.UserName);
+                _logger.LogInformation("userController - User for deletion: " + deletedUser.Result.UserName);
 
                 await _userRepository.DeleteUser(userId);
 
-                return Ok("User deleted");
+                return Ok("userController - User deleted");
             }
         }
     }
