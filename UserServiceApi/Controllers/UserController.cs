@@ -66,7 +66,7 @@ public class UserController : ControllerBase
             Description = description
         };
 
-        return Ok(versionInfo);
+        return Ok("THIS IS A TEST, THIS IMAGE SHOULD SHOW: MAIN");
     }
 
 
