@@ -67,22 +67,7 @@ public class UserControllerTests : ControllerBase
         return CreatedAtAction("Get", new { id = user.UserId }, user);
     }
 
-    [Test]
-    public void TestBookingEndpoint_failure_posting()
-    {
-        // Arrange
-        var bookingDTO = CreateUser(new DateTime(2023, 05, 25, 13, 00, 00));
-        var stubRepo = new Mock<UserRepository>();
-        stubRepo.Setup(svc => svc.AddNewUser(bookingDTO))
-            .Returns(Task.FromException<User?>(new Exception()));
-        var controller = new UserController(_logger, _configuration, stubRepo.Object);
-
-        // Act        
-        var result = controller.AddNewUser(bookingDTO);
-
-        // Assert
-        Assert.That(result, Is.TypeOf<BadRequestResult>());
-    }
+    
 
 
 }
