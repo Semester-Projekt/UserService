@@ -172,11 +172,31 @@ public class UserController : ControllerBase
         }
         _logger.LogInformation("userController - User for update: " + updatedUser.Result.UserName);
 
-        await _userRepository.UpdateUser(userId, user!); // updates the user with the provided info
+        var allUsers = _userRepository.GetAllUsers().Result.ToList();
 
-        var newUpdatedUser = await _userRepository.GetUserById(userId); // creates an object containing the updatedUser info
+        bool userNameTaken = false; // creates a new bool which will change in case the userName is taken
 
-        return Ok(newUpdatedUser); // returns an OK statuscode along with the newUpdatedUser object
+        foreach (var bruger in allUsers) // loops through all current users
+        {
+            if (bruger.UserName == user.UserName) // if any of them have the requested UserName, converts the bool to true
+            {
+                userNameTaken = true;
+                break;
+            }
+        }
+        
+        if (userNameTaken) // checks if userName is taken
+        {
+            return BadRequest($"userController - Cannot change UserName to {user.UserName}. UserName is already taken");
+        }
+        else
+        {
+            await _userRepository.UpdateUser(userId, user!); // updates the user with the provided info
+
+            var newUpdatedUser = await _userRepository.GetUserById(userId); // creates an object containing the updatedUser info
+
+            return Ok(newUpdatedUser); // returns an OK statuscode along with the newUpdatedUser object
+        }
     }
 
 
