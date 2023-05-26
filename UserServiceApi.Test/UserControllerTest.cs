@@ -1,10 +1,8 @@
 using NUnit.Framework;
 using Moq;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -24,7 +22,7 @@ public class UserControllerTests : ControllerBase
     {
         NUnit.Framework.Assert.Pass();
     }
-
+    
     
 
 

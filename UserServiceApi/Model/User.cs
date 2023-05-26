@@ -9,12 +9,12 @@ namespace Model
 {
 	public class User
 	{
-		[BsonId]
-		[BsonRepresentation(BsonType.ObjectId)]
+		[BsonId] // mongo id for a specified user
+        [BsonRepresentation(BsonType.ObjectId)]
 		public string? MongoId { get; set; }
 		
 		[BsonElement("UserId")]
-		public int UserId { get; set; } // skal måske være en 'int'?
+		public int UserId { get; set; }
 
         [BsonElement("UserName")]
         public string UserName { get; set; }

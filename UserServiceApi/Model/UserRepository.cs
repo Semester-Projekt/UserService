@@ -10,21 +10,21 @@ namespace Model
 {
     public class UserRepository
     {
-        private readonly IMongoCollection<User> _user;
-
-        public UserRepository()
+        private readonly IMongoCollection<User> _users; // creates the mongo collection of Users
+        
+        public UserRepository() // constructor for initializing the UserRepository class with the 
         {
-            string connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING"); // mongo conn string miljøvariabel
-            var client = new MongoClient(connectionString);
-            var database = client.GetDatabase("User"); // vores database
-            _user = database.GetCollection<User>("Users");
+            string connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING"); // retreives environment varialbe - mongo conn string
+            var client = new MongoClient(connectionString); // creates a new mongo client
+            var database = client.GetDatabase("User"); // retreives db
+            _users = database.GetCollection<User>("Users"); // retreives collection
         }
         
-        
-        public async Task<User> FindUserByUsernameAndPassword(string userName, string userPassword)
+
+        public async Task<User> FindUserByUsernameAndPassword(string userName, string userPassword) // function for finding a user in the db based on UserName and Password
         {
             var filter = Builders<User>.Filter.Eq("UserName", userName) & Builders<User>.Filter.Eq("UserPassword", userPassword);
-            return await _user.Find(filter).FirstOrDefaultAsync();
+            return await _users.Find(filter).FirstOrDefaultAsync();
         }
 
 
@@ -32,25 +32,25 @@ namespace Model
 
 
         //GET
-        public async Task<List<User>> GetAllUsers()
+        public virtual async Task<List<User>> GetAllUsers() // method for retreiving allUsers in the collection
         {
-            return await _user.Aggregate().ToListAsync();
+            return await _users.Aggregate().ToListAsync();
         }
 
-        public async Task<User> GetUserById(int userId)
+        public virtual async Task<User> GetUserById(int userId) // method for retreiving a specific User in the collection
         {
             var filter = Builders<User>.Filter.Eq("UserId", userId);
             Console.WriteLine("repository - GetUserById");
             Console.WriteLine("id: " + userId);
-            Console.WriteLine("database: " + _user);
+            Console.WriteLine("database: " + _users);
 
-            return await _user.Find(filter).FirstOrDefaultAsync();
+            return await _users.Find(filter).FirstOrDefaultAsync();
         }
 
-        public int GetNextUserId()
+        public virtual async Task<int> GetNextUserId() // method for retreiving the highest+1 userId in the collection
         {
-            var lastUser = _user.AsQueryable().OrderByDescending(a => a.UserId).FirstOrDefault();
-            return (lastUser != null) ? lastUser.UserId + 1 : 1;
+            var lastUser = _users.AsQueryable().OrderByDescending(a => a.UserId).FirstOrDefault(); // retreives allUsers and orders them by userId in descending order
+            return (lastUser != null) ? lastUser.UserId + 1 : 1; // adds 1 to the current highest userId
         }
 
 
@@ -59,9 +59,9 @@ namespace Model
         
 
         //POST
-        public async Task AddNewUser(User? user)
+        public virtual async Task AddNewUser(User? user) // method for adding a new User to the collection
         {
-            await Task.Run(() => _user.InsertOne(user!));
+            await Task.Run(() => _users.InsertOne(user!));
         }
 
 
@@ -70,16 +70,17 @@ namespace Model
 
 
         //PUT
-        public async Task UpdateUser(int userId, User user)
+        public virtual async Task UpdateUser(int userId, User user) // method for updating specified User attributes
         {
             var filter = Builders<User>.Filter.Eq(a => a.UserId, userId);
             var update = Builders<User>.Update.
+                // updates desired attributes
                 Set(a => a.UserName, user.UserName).
                 Set(a => a.UserPassword, user.UserPassword).
                 Set(a => a.UserEmail, user.UserEmail).
                 Set(a => a.UserPhone, user.UserPhone);
             
-            await _user.UpdateOneAsync(filter, update);
+            await _users.UpdateOneAsync(filter, update);
         }
 
 
@@ -88,10 +89,10 @@ namespace Model
 
 
         //DELETE
-        public async Task DeleteUser(int userId)
+        public virtual async Task DeleteUser(int userId) // method for deleting a User from the collection
         {
-            var filter = Builders<User>.Filter.Eq(a => a.UserId, userId);
-            await _user.DeleteOneAsync(filter);
+            var filter = Builders<User>.Filter.Eq(a => a.UserId, userId); // retreives the specified userId
+            await _users.DeleteOneAsync(filter);
         }
     }
 }

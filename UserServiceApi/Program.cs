@@ -5,19 +5,21 @@ using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
 
-//Indlæs NLog.config-konfigurationsfil
+// Load NLog.config configuration file
 var logger =
 NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
 
-try // try/catch/finally fra m10.01 opgave b step 4
+try
 {
 
     var builder = WebApplication.CreateBuilder(args);
 
-
+    // Retrieve environment variables or use default values
     string mySecret = Environment.GetEnvironmentVariable("Secret") ?? "none";
     string myIssuer = Environment.GetEnvironmentVariable("Issuer") ?? "none";
+
+    // Add JWT authentication
     builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -35,15 +37,16 @@ try // try/catch/finally fra m10.01 opgave b step 4
         };
     });
 
-    // Add services to the container.
+    // Add User Repository as a singleton service
     builder.Services.AddSingleton<UserRepository>();
 
     builder.Services.AddControllers();
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    // Configure Swagger/OpenAPI
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
-    //Brug NLog som logger fremadrettet
+    // Use NLog as the logger
     builder.Host.UseNLog();
 
     var app = builder.Build();
@@ -65,15 +68,17 @@ try // try/catch/finally fra m10.01 opgave b step 4
 
     app.Run();
 
-}
+} // End of try block
 
 catch (Exception ex)
 {
+    // Log and handle exceptions
     logger.Error(ex, "Stopped program because of exception");
     throw;
 }
 
 finally
 {
+    // Shutdown NLog to ensure all logs are flushed
     NLog.LogManager.Shutdown();
 }

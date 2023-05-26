@@ -43,8 +43,8 @@
     <PackageReference Include="MongoDB.Bson" Version="2.19.2" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.19.2" />
     <PackageReference Include="MongoDB.Driver" Version="2.19.2" />
-    <PackageReference Include="NLog" Version="5.1.4" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="5.2.3" />
+    <PackageReference Include="NLog" Version="5.1.5" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.2.5" />
     <PackageReference Include="NLog.Targets.Loki" Version="1.4.6" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.3" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.5" />
