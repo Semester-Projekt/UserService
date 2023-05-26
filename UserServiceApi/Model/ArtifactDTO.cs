@@ -10,12 +10,14 @@ namespace Model
 {
     public class ArtifactDTO
     {
-        [BsonId]
+        // This class works as a Data Transfer Object to receive data from the Artifact-class in CatalogueService
+
+        [BsonId] // mongo id for a specified ArtifactDTO
         [BsonRepresentation(BsonType.ObjectId)]
         public string? MongoId { get; set; }
 
         [BsonElement("ArtifactID")]
-        public int ArtifactID { get; set; } //skal måske være en 'int'?
+        public int ArtifactID { get; set; }
 
         [BsonElement("ArtifactName")]
         public string? ArtifactName { get; set; }
@@ -26,17 +28,17 @@ namespace Model
         [BsonElement("CategoryCode")]
         public string? CategoryCode { get; set; }
 
-        [BsonElement("ArtifactOwner")]
-        public User? ArtifactOwner { get; set; } // er dette rigtigt? skal evt laves om til User ArtifactOwner
+        [BsonElement("ArtifactOwner")] // a user object is set as owner
+        public User? ArtifactOwner { get; set; }
 
         [BsonElement("Estimate")]
         public int? Estimate { get; set; }
 
         [BsonElement("ArtifactPicture")]
-        public byte[]? ArtifactPicture { get; set; } = null; // hvordan uploader vi et billede?
+        public byte[]? ArtifactPicture { get; set; } = null;
 
-        [BsonElement("Status")]
-        public string? Status { get; set; } = "Pending"; // skal "Pending stå på metode?"
+        [BsonElement("Status")] // new artifact are initialised as pending and awaiting auction
+        public string? Status { get; set; } = "Pending";
 
 
         public ArtifactDTO(int artifactID, string artifactName, string artifactDescription, int estimate, string categoryCode)
