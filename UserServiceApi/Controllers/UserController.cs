@@ -219,7 +219,7 @@ public class UserController : ControllerBase
             string catalogueServiceUrl = Environment.GetEnvironmentVariable("CATALOGUE_SERVICE_URL"); // retreives URL environment variable from docker-compose.yml file
             string getCatalogueEndpoint = "/catalogue/getAllArtifacts"; // specifies with endpoint in CatalogueService to retreive data from
 
-            _logger.LogInformation(catalogueServiceUrl + getCatalogueEndpoint);
+            _logger.LogInformation($"UserService - {catalogueServiceUrl + getCatalogueEndpoint}");
 
             HttpResponseMessage response = await client.GetAsync(catalogueServiceUrl + getCatalogueEndpoint); // creates the endpoint to retreive data from
             if (!response.IsSuccessStatusCode)
@@ -260,7 +260,9 @@ public class UserController : ControllerBase
                 {
                     if (artifact.ArtifactOwner.UserId == userId)
                     {
+                        _logger.LogInformation("UserService - deletedArtifactName: " + artifact.ArtifactName);
                         string getArtifactDeletionEndpoint = "/catalogue/deleteartifact/" + artifact.ArtifactID;
+                        _logger.LogInformation($"UserService - {catalogueServiceUrl + getArtifactDeletionEndpoint}");
                         HttpResponseMessage deletArtifactResponse = await client.PutAsync(catalogueServiceUrl + getArtifactDeletionEndpoint, null);
                     }
                 }

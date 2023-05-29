@@ -31,10 +31,6 @@ namespace Model
         public virtual async Task<User> GetUserById(int userId) // method for retreiving a specific User in the collection
         {
             var filter = Builders<User>.Filter.Eq("UserId", userId);
-            Console.WriteLine("repository - GetUserById");
-            Console.WriteLine("id: " + userId);
-            Console.WriteLine("database: " + _users);
-
             return await _users.Find(filter).FirstOrDefaultAsync();
         }
 
