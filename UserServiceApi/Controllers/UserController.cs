@@ -235,6 +235,11 @@ public class UserController : ControllerBase
 
             List<ArtifactDTO> usersActiveArtifacts = new List<ArtifactDTO>(); // initializes a new list of Artifacts to add the specified users Artifacts to
 
+            if (deletedUser == null) // validates specified user
+            {
+                return BadRequest("userController - User does not exist");
+            }
+
             for (int i = 0; i < activeArtifacts.Count(); i++) // loops through activeArtifacts to check if the user owns any
             {
                 if (activeArtifacts[i].ArtifactOwner.UserName == deletedUser.Result.UserName)
@@ -244,11 +249,7 @@ public class UserController : ControllerBase
             }
             _logger.LogInformation("userController - UsersActiveArtifactsCount: " + usersActiveArtifacts.Count);
             
-            if (deletedUser == null) // validates specified user
-            {
-                return BadRequest("userController - User does not exist");
-            }
-            else if (usersActiveArtifacts.Count > 0) // checks whether the specified user owns any Artifacts
+            if (usersActiveArtifacts.Count > 0) // checks whether the specified user owns any Artifacts
             {
                 return BadRequest("userController - You have active artifacts in the database and therefore cannot delete your user");
             }
