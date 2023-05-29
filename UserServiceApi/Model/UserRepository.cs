@@ -19,18 +19,9 @@ namespace Model
             var database = client.GetDatabase("User"); // retreives db
             _users = database.GetCollection<User>("Users"); // retreives collection
         }
+
+
         
-
-        public async Task<User> FindUserByUsernameAndPassword(string userName, string userPassword) // function for finding a user in the db based on UserName and Password
-        {
-            var filter = Builders<User>.Filter.Eq("UserName", userName) & Builders<User>.Filter.Eq("UserPassword", userPassword);
-            return await _users.Find(filter).FirstOrDefaultAsync();
-        }
-
-
-
-
-
         //GET
         public virtual async Task<List<User>> GetAllUsers() // method for retreiving allUsers in the collection
         {
@@ -47,14 +38,14 @@ namespace Model
             return await _users.Find(filter).FirstOrDefaultAsync();
         }
 
-        public virtual async Task<int> GetNextUserId() // method for retreiving the highest+1 userId in the collection
+        public virtual async Task<int?> GetNextUserId() // method for retreiving the highest+1 userId in the collection
         {
             var lastUser = _users.AsQueryable().OrderByDescending(a => a.UserId).FirstOrDefault(); // retreives allUsers and orders them by userId in descending order
             return (lastUser != null) ? lastUser.UserId + 1 : 1; // adds 1 to the current highest userId
         }
 
 
-
+        
 
         
 
