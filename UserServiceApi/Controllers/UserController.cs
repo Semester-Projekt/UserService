@@ -259,7 +259,7 @@ public class UserController : ControllerBase
                 
                 foreach (var artifact in allArtifacts)
                 {
-                    if (artifact.ArtifactOwner.UserId == userId)
+                    if (artifact.ArtifactOwner.UserName == deletedUser.Result.UserName)
                     {
                         _logger.LogInformation("UserService - deletedArtifactName: " + artifact.ArtifactName);
                         string getArtifactDeletionEndpoint = "/catalogue/deleteartifact/" + artifact.ArtifactID;
