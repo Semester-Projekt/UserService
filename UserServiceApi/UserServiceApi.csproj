@@ -4,8 +4,6 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-
-
     <Company>Daniels gruppe</Company>
     <Authors>
         Daniel B
@@ -13,11 +11,9 @@
         Mads K
         Mads-Emil J
     </Authors>
-
-    <AssemblyVersion>1.0.1.1</AssemblyVersion>
-    <FileVersion>1.0.1.1</FileVersion>
-
+    <Copyright>2023 EAA</Copyright>
     <InformationalVersion>2.0.0</InformationalVersion>
+    <Description>Comments added along with final logs</Description>
 
 
 
