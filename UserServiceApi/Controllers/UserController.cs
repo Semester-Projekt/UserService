@@ -21,6 +21,7 @@ using MongoDB.Driver;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using System.IO;
+using System.Diagnostics;
 
 namespace Controllers;
 
@@ -50,25 +51,31 @@ public class UserController : ControllerBase
     }
 
 
-
-    [HttpGet("version")] // version endpoint
-    public IActionResult GetVersion()
+    [HttpGet("version")]
+    public async Task<Dictionary<string, string>> GetVersion()
     {
+        var properties = new Dictionary<string, string>();
         var assembly = typeof(Program).Assembly;
 
+        properties.Add("service", "User");
+        var ver = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).ProductVersion;
+        properties.Add("version", ver!);
 
-        var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        var description = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>()?.Description;
-
-        var versionInfo = new
+        try
         {
-            InformationalVersion = informationalVersion,
-            Description = description
-        };
+            var hostName = System.Net.Dns.GetHostName();
+            var ips = await System.Net.Dns.GetHostAddressesAsync(hostName);
+            var ipa = ips.First().MapToIPv4().ToString();
+            properties.Add("hosted-at-address", ipa);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message);
+            properties.Add("hosted-at-address", "Could not resolve IP-address");
+        }
 
-        return Ok(versionInfo);
+        return properties;
     }
-
 
 
 
@@ -76,18 +83,18 @@ public class UserController : ControllerBase
     [HttpGet("getuser/{userId}"), DisableRequestSizeLimit] // getuser endpoint to retreive a specific user from the db
     public async Task<IActionResult> GetUserById(int userId)
     {
-        _logger.LogInformation("userController - getUser function hit");
+        _logger.LogInformation("UserService - getUser function hit");
 
-        _logger.LogInformation("userController - userId: " + userId);
+        _logger.LogInformation("UserService - userId: " + userId);
 
         var user = await _userRepository.GetUserById(userId); // gets user from collection using repository method
 
         if (user == null)
         {
-            return BadRequest("userController - user does not exist");
+            return BadRequest("UserService - user does not exist");
         }
 
-        _logger.LogInformation("userController - after loading user: " + user.UserName);
+        _logger.LogInformation("UserService - after loading user: " + user.UserName);
 
         return Ok(user); // returns an OK statuscode, along with the entire user object
     }
@@ -101,7 +108,7 @@ public class UserController : ControllerBase
     [HttpPost("addNewUser"), DisableRequestSizeLimit] //addnewuser endpoint for adding a new user to the db
     public async Task<IActionResult> AddNewUser([FromBody] User? user)
     {
-        _logger.LogInformation("userController - AddNewUser funk ramt");
+        _logger.LogInformation("UserService - AddNewUser funk ramt");
 
         var allUsers = await _userRepository.GetAllUsers(); //gets all current users from the db
         
@@ -118,10 +125,10 @@ public class UserController : ControllerBase
             UserPhone = user.UserPhone,
             UserAddress = user.UserAddress
         };
-        _logger.LogInformation("userController - Nyt user objekt lavet, name: " + user.UserName);
+        _logger.LogInformation("UserService - Nyt user objekt lavet, name: " + user.UserName);
 
-        _logger.LogInformation("userController - user mongo id: " + user.MongoId);
-        _logger.LogInformation("userController - newuser mongo id: " + newUser.MongoId);
+        _logger.LogInformation("UserService - user mongo id: " + user.MongoId);
+        _logger.LogInformation("UserService - newuser mongo id: " + newUser.MongoId);
 
 
         bool userNameTaken = false; // creates a new bool which will change in case the userName is taken
@@ -137,18 +144,18 @@ public class UserController : ControllerBase
 
         if (newUser.UserId == null) // validates the new users id
         {
-            return BadRequest("userController - UserId is null");
+            return BadRequest("UserService - UserId is null");
         }
         else if (userNameTaken)
         {
-            return BadRequest("userController - UserName is taken"); // checks if userName is taken
+            return BadRequest("UserService - UserName is taken"); // checks if userName is taken
         }
         else
         {
             _userRepository.AddNewUser(newUser); // adds the new user object to _users
         }
 
-        _logger.LogInformation("userController - new user object added to _users");
+        _logger.LogInformation("UserService - new user object added to _users");
 
         return Ok(newUser); // returns the newUser
     }
@@ -162,15 +169,15 @@ public class UserController : ControllerBase
     [HttpPut("updateUser/{userId}"), DisableRequestSizeLimit] // updateUser endpoint for updating desired user
     public async Task<IActionResult> UpdateUser(int userId, User? user)
     {
-        _logger.LogInformation("userController - UpdateUser function hit");
+        _logger.LogInformation("UserService - UpdateUser function hit");
 
         var updatedUser = _userRepository.GetUserById(userId); // retreives the desired user from the collection
 
         if (updatedUser == null)
         {
-            return BadRequest("userController - User does not exist");
+            return BadRequest("UserService - User does not exist");
         }
-        _logger.LogInformation("userController - User for update: " + updatedUser.Result.UserName);
+        _logger.LogInformation("UserService - User for update: " + updatedUser.Result.UserName);
 
         var allUsers = _userRepository.GetAllUsers().Result.ToList();
 
@@ -187,7 +194,7 @@ public class UserController : ControllerBase
         
         if (userNameTaken) // checks if userName is taken
         {
-            return BadRequest($"userController - Cannot change UserName to {user.UserName}. UserName is already taken");
+            return BadRequest($"UserService - Cannot change UserName to {user.UserName}. UserName is already taken");
         }
         else
         {
@@ -208,7 +215,7 @@ public class UserController : ControllerBase
     [HttpDelete("deleteUser/{userId}"), DisableRequestSizeLimit] // deleteUser endpoint for deleting a user
     public async Task<IActionResult> DeleteUser(int userId)
     {
-        _logger.LogInformation("userController - DeleteUser function hit");
+        _logger.LogInformation("UserService - DeleteUser function hit");
 
         var deletedUser = _userRepository.GetUserById(userId); // retreives the specified user
 
@@ -224,20 +231,20 @@ public class UserController : ControllerBase
             HttpResponseMessage response = await client.GetAsync(catalogueServiceUrl + getCatalogueEndpoint); // creates the endpoint to retreive data from
             if (!response.IsSuccessStatusCode)
             {
-                return StatusCode((int)response.StatusCode, "userController - Failed to retrieve UserId from UserService");
+                return StatusCode((int)response.StatusCode, "UserService - Failed to retrieve UserId from UserService");
             }
 
             var allArtifacts = await response.Content.ReadFromJsonAsync<List<ArtifactDTO>>(); // deserializes the data from the endpoint and retreives all Artifacts in the endpoints db
-            _logger.LogInformation("Total Artifacts: " + allArtifacts!.Count);
+            _logger.LogInformation("UserService - Total Artifacts: " + allArtifacts!.Count);
 
             List<ArtifactDTO> activeArtifacts = (List<ArtifactDTO>)allArtifacts.Where(s => s.Status == "Active").ToList(); // filters and retreives the Artifacts where the status is NOT equel to "Deleted"
-            _logger.LogInformation("Total Active Artifacts: " + activeArtifacts.Count);
+            _logger.LogInformation("UserService - Total Active Artifacts: " + activeArtifacts.Count);
 
             List<ArtifactDTO> usersActiveArtifacts = new List<ArtifactDTO>(); // initializes a new list of Artifacts to add the specified users Artifacts to
 
             if (deletedUser == null) // validates specified user
             {
-                return BadRequest("userController - User does not exist");
+                return BadRequest("UserService - User does not exist");
             }
 
             for (int i = 0; i < activeArtifacts.Count(); i++) // loops through activeArtifacts to check if the user owns any
@@ -247,22 +254,22 @@ public class UserController : ControllerBase
                     usersActiveArtifacts.Add(activeArtifacts[i]); // adds any Artifacts owned by the User to the list
                 }
             }
-            _logger.LogInformation("userController - UsersActiveArtifactsCount: " + usersActiveArtifacts.Count);
+            _logger.LogInformation("UserService - UsersActiveArtifactsCount: " + usersActiveArtifacts.Count);
             
             if (usersActiveArtifacts.Count > 0) // checks whether the specified user owns any Artifacts
             {
-                return BadRequest("userController - You have active artifacts in the database and therefore cannot delete your user");
+                return BadRequest("UserService - You have active artifacts in the database and therefore cannot delete your user");
             }
             else
             {
-                _logger.LogInformation("userController - User for deletion: " + deletedUser.Result.UserName);
+                _logger.LogInformation("UserService - User for deletion: " + deletedUser.Result.UserName);
                 
-                foreach (var artifact in allArtifacts)
+                foreach (var artifact in allArtifacts) // loops through allArtifacts and sets any, with a matching ArtifactOwner to have a status of 'Deleted'
                 {
                     if (artifact.ArtifactOwner.UserName == deletedUser.Result.UserName)
                     {
                         _logger.LogInformation("UserService - deletedArtifactName: " + artifact.ArtifactName);
-                        string getArtifactDeletionEndpoint = "/catalogue/deleteartifact/" + artifact.ArtifactID;
+                        string getArtifactDeletionEndpoint = "/catalogue/deleteartifact/" + artifact.ArtifactID; // retreives endpoint to deleteArtifact in CatalogueService
                         _logger.LogInformation($"UserService - {catalogueServiceUrl + getArtifactDeletionEndpoint}");
                         HttpResponseMessage deletArtifactResponse = await client.PutAsync(catalogueServiceUrl + getArtifactDeletionEndpoint, null);
                     }
