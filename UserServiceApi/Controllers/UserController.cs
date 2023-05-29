@@ -107,7 +107,7 @@ public class UserController : ControllerBase
         
         _logger.LogInformation("UserService - total users: " + allUsers.Count);
 
-        int latestID = await _userRepository.GetNextUserId(); // Gets latest ID in _users + 1
+        int? latestID = await _userRepository.GetNextUserId(); // Gets latest ID in _users + 1
 
         var newUser = new User // extracts the new user from the request body
         {
@@ -227,39 +227,43 @@ public class UserController : ControllerBase
                 return StatusCode((int)response.StatusCode, "userController - Failed to retrieve UserId from UserService");
             }
 
-            var catalogueResponse = await response.Content.ReadFromJsonAsync<List<ArtifactDTO>>(); // deserializes the data from the endpoint
+            var allArtifacts = await response.Content.ReadFromJsonAsync<List<ArtifactDTO>>(); // deserializes the data from the endpoint and retreives all Artifacts in the endpoints db
 
-            List<ArtifactDTO> nonDeletedArtifacts = (List<ArtifactDTO>)catalogueResponse.Where(s => s.Status != "Deleted").ToList(); // filters and retreives the Artifacts where the status is NOT equel to "Deleted"
-            _logger.LogInformation("" + nonDeletedArtifacts.Count);
+            List<ArtifactDTO> activeArtifacts = (List<ArtifactDTO>)allArtifacts.Where(s => s.Status == "Active").ToList(); // filters and retreives the Artifacts where the status is NOT equel to "Deleted"
+            _logger.LogInformation("" + activeArtifacts.Count);
 
             List<ArtifactDTO> usersArtifacts = new List<ArtifactDTO>(); // initializes a new list of Artifacts to add the specified users Artifacts to
 
-            for (int i = 0; i < nonDeletedArtifacts.Count(); i++) // loops through nonDeletedArtifacts to check if the user owns any
+            for (int i = 0; i < activeArtifacts.Count(); i++) // loops through activeArtifacts to check if the user owns any
             {
-                if (nonDeletedArtifacts[i].ArtifactOwner.UserName == deletedUser.Result.UserName)
+                if (activeArtifacts[i].ArtifactOwner.UserName == deletedUser.Result.UserName)
                 {
-                    usersArtifacts.Add(nonDeletedArtifacts[i]); // adds any Artifacts owned by the User to the list
+                    usersArtifacts.Add(activeArtifacts[i]); // adds any Artifacts owned by the User to the list
                 }
             }
             _logger.LogInformation("userController - UsersArtifactsCount: " + usersArtifacts.Count);
-
-
             
-
             if (deletedUser == null) // validates specified user
             {
                 return BadRequest("userController - User does not exist");
             }
             else if (usersArtifacts.Count > 0) // checks whether the specified user owns any Artifacts
             {
-                return BadRequest("userController - You have active artifacts in the database and there cannot delete your user");
+                return BadRequest("userController - You have active artifacts in the database and therefore cannot delete your user");
             }
-
             else
             {
                 _logger.LogInformation("userController - User for deletion: " + deletedUser.Result.UserName);
 
                 await _userRepository.DeleteUser(userId); // deletes the user from the db
+
+                foreach (var artifact in allArtifacts)
+                {
+                    if (artifact.ArtifactOwner.UserId == userId)
+                    {
+                        artifact.Status = "Deleted";
+                    }
+                }
 
                 return Ok("userController - User deleted");
             }
