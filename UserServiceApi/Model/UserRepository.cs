@@ -32,12 +32,6 @@ namespace Model
             var filter = Builders<User>.Filter.Eq("UserId", userId);
             return await _users.Find(filter).FirstOrDefaultAsync();
         }
-        
-        public virtual async Task<int?> GetNextUserId() // method for retreiving the highest+1 userId in the collection
-        {
-            var lastUser = _users.AsQueryable().OrderByDescending(a => a.UserId).FirstOrDefault(); // retreives allUsers and orders them by userId in descending order
-            return (lastUser != null) ? lastUser.UserId + 1 : 1; // adds 1 to the current highest userId
-        }
 
 
         

@@ -1,4 +1,4 @@
-﻿//usings
+﻿// Usings
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
@@ -25,11 +25,11 @@ using System.Diagnostics;
 
 namespace Controllers;
 
-[ApiController] // api controller to handle api calls
-[Route("[controller]")] // controller name set as default http endpoint name
+[ApiController] // Api controller to handle api calls
+[Route("[controller]")] // Controller name set as default http endpoint name
 public class UserController : ControllerBase
 {
-    // creates 3 instances, 1 for a logger, one for a config, 1 for an instance of the userRepository.cs class
+    // Creates 3 instances, 1 for a logger, one for a config, 1 for an instance of the userRepository.cs class
     private readonly ILogger<UserController> _logger;
     private readonly IConfiguration _config;
     private UserRepository _userRepository;
@@ -37,7 +37,7 @@ public class UserController : ControllerBase
 
     public UserController(ILogger<UserController> logger, IConfiguration config, UserRepository userRepository, HttpClient httpClient)
     {
-        // initializes the controllers constructor with the 3 specified private objects
+        // Initializes the controllers constructor with the 3 specified private objects
         _config = config;
         _logger = logger;
         _userRepository = userRepository;
@@ -81,15 +81,15 @@ public class UserController : ControllerBase
 
 
 
-    //GET
-    [HttpGet("getuser/{userId}"), DisableRequestSizeLimit] // getuser endpoint to retreive a specific user from the db
+    // GET
+    [HttpGet("getuser/{userId}"), DisableRequestSizeLimit] // Getuser endpoint to retreive a specific user from the db
     public async Task<IActionResult> GetUserById(int userId)
     {
         _logger.LogInformation("UserService - getUser function hit");
 
         _logger.LogInformation("UserService - userId: " + userId);
 
-        var user = await _userRepository.GetUserById(userId); // gets user from collection using repository method
+        var user = await _userRepository.GetUserById(userId); // Gets user from collection using repository method
 
         if (user == null)
         {
@@ -98,7 +98,7 @@ public class UserController : ControllerBase
 
         _logger.LogInformation("UserService - after loading user: " + user.UserName);
 
-        return Ok(user); // returns an OK statuscode, along with the entire user object
+        return Ok(user); // Returns an OK statuscode, along with the entire user object
     }
 
 
@@ -106,69 +106,7 @@ public class UserController : ControllerBase
 
 
 
-    //POST
-    /*[HttpPost("addNewUser"), DisableRequestSizeLimit] //addnewuser endpoint for adding a new user to the db
-    public async Task<IActionResult> AddNewUser([FromBody] User? user)
-    {
-        _logger.LogInformation("UserService - AddNewUser funk ramt");
-
-        int? latestID = 0;
-
-        var allUsers = await _userRepository.GetAllUsers(); //gets all current users from the db
-        
-        _logger.LogInformation("UserService - total users: " + allUsers.Count);
-
-        //int? latestID = await _userRepository.GetNextUserId(); // Gets latest ID in _users + 1
-        
-        int? lastID = allUsers.OrderByDescending(a => a.UserId).FirstOrDefault()!.UserId;
-        latestID = lastID + 1;
-
-        if (allUsers.Count < 1)
-        {
-            latestID = 1;
-        }
-
-        var newUser = new User(); // extracts the new user from the request body
-        if (user != null)
-        {
-            newUser.UserId = latestID; // sets the newUser ID as the next one in the collection
-            newUser.UserName = user!.UserName;
-            newUser.UserPassword = user.UserPassword;
-            newUser.UserEmail = user.UserEmail;
-            newUser.UserPhone = user.UserPhone;
-            newUser.UserAddress = user.UserAddress;
-        };
-        _logger.LogInformation("UserService - Nyt user objekt lavet, name: " + user!.UserName);
-
-        _logger.LogInformation("UserService - user mongo id: " + user.MongoId);
-        _logger.LogInformation("UserService - newuser mongo id: " + newUser.MongoId);
-
-
-        bool userNameTaken = false; // creates a new bool which will change in case the userName is taken
-
-        foreach (var bruger in allUsers) // loops through all current users
-        {
-            if (bruger.UserName == newUser.UserName) // if any of them have the requested UserName, converts the bool to true
-            {
-                userNameTaken = true;
-                break;
-            }
-        }
-
-        if (userNameTaken)
-        {
-            return BadRequest("UserService - UserName is taken"); // checks if userName is taken
-        }
-        else
-        {
-            _userRepository.AddNewUser(newUser); // adds the new user object to _users
-        }
-
-        _logger.LogInformation("UserService - new user object added to _users");
-
-        return Ok(newUser); // returns the newUser
-    }*/
-
+    // POST
     [HttpPost("addNewUser"), DisableRequestSizeLimit]
     public async Task<IActionResult> AddNewUser([FromBody] User? user)
     {
@@ -177,10 +115,8 @@ public class UserController : ControllerBase
         var allUsers = await _userRepository.GetAllUsers();
         _logger.LogInformation("UserService - total users: " + allUsers.Count);
 
-        // Find the maximum user ID from the list of all users, or default to 0 if the list is empty,
-        // then add 1 to get the latest ID for the new user
+        // Find the maximum user ID from the list of all users, or default to 0 if the list is empty, then add 1 to get the latest ID for the new user
         int? latestID = (allUsers.Max(a => (int?)a.UserId) ?? 0) + 1;
-        
         latestID = allUsers.DefaultIfEmpty().Max(a => a == null ? 0 : a.UserId) + 1;
 
         var newUser = new User(); // Initialize new User object and validate the request body input
@@ -207,7 +143,7 @@ public class UserController : ControllerBase
             return BadRequest("UserService - UserName is already taken");
         }
         
-        await _userRepository.AddNewUser(newUser); // adds the newUser to _users
+        await _userRepository.AddNewUser(newUser); // Adds the newUser to _users
         _logger.LogInformation("UserService - New user object added to _users");
 
         return Ok(newUser);
@@ -220,13 +156,13 @@ public class UserController : ControllerBase
 
 
 
-    //PUT
-    [HttpPut("updateUser/{userId}"), DisableRequestSizeLimit] // updateUser endpoint for updating desired user
+    // PUT
+    [HttpPut("updateUser/{userId}"), DisableRequestSizeLimit] // UpdateUser endpoint for updating desired user
     public async Task<IActionResult> UpdateUser(int userId, User? user)
     {
         _logger.LogInformation("UserService - UpdateUser function hit");
 
-        var updatedUser = _userRepository.GetUserById(userId); // retreives the desired user from the collection
+        var updatedUser = _userRepository.GetUserById(userId); // Retreives the desired user from the collection
 
         if (updatedUser == null)
         {
@@ -236,28 +172,28 @@ public class UserController : ControllerBase
 
         var allUsers = _userRepository.GetAllUsers().Result.ToList();
 
-        bool userNameTaken = false; // creates a new bool which will change in case the userName is taken
+        bool userNameTaken = false; // Creates a new bool which will change in case the userName is taken
 
-        foreach (var bruger in allUsers) // loops through all current users
+        foreach (var bruger in allUsers) // Loops through all current users
         {
-            if (bruger.UserName == user!.UserName) // if any of them have the requested UserName, converts the bool to true
+            if (bruger.UserName == user!.UserName) // If any of them have the requested UserName, converts the bool to true
             {
                 userNameTaken = true;
                 break;
             }
         }
         
-        if (userNameTaken) // checks if userName is taken
+        if (userNameTaken) // Checks if userName is taken
         {
             return BadRequest($"UserService - Cannot change UserName to {user!.UserName}. UserName is already taken");
         }
         else
         {
-            await _userRepository.UpdateUser(userId, user!); // updates the user with the provided info
+            await _userRepository.UpdateUser(userId, user!); // Updates the user with the provided info
 
-            var newUpdatedUser = await _userRepository.GetUserById(userId); // creates an object containing the updatedUser info
+            var newUpdatedUser = await _userRepository.GetUserById(userId); // Creates an object containing the updatedUser info
 
-            return Ok(newUpdatedUser); // returns an OK statuscode along with the newUpdatedUser object
+            return Ok(newUpdatedUser); // Returns an OK statuscode along with the newUpdatedUser object
         }
     }
 
@@ -266,52 +202,50 @@ public class UserController : ControllerBase
 
 
 
-    //DELETE
-    [HttpDelete("deleteUser/{userId}"), DisableRequestSizeLimit] // deleteUser endpoint for deleting a user
+    // DELETE
+    [HttpDelete("deleteUser/{userId}"), DisableRequestSizeLimit] // DeleteUser endpoint for deleting a user
     public async Task<IActionResult> DeleteUser(int? userId)
     {
         _logger.LogInformation("UserService - DeleteUser function hit");
 
-        var deletedUser = _userRepository.GetUserById(userId); // retreives the specified user
+        var deletedUser = _userRepository.GetUserById(userId); // Retreives the specified user
 
         using (_httpClient = new HttpClient())
         {
-            //string catalogueServiceUrl = "http://localhost:4000";
-            //string catalogueServiceUrl = "http://catalogue:80";
-            string catalogueServiceUrl = Environment.GetEnvironmentVariable("CATALOGUE_SERVICE_URL")!; // retreives URL environment variable from docker-compose.yml file
-            string getCatalogueEndpoint = "/catalogue/getAllArtifacts"; // specifies with endpoint in CatalogueService to retreive data from
+            string catalogueServiceUrl = Environment.GetEnvironmentVariable("CATALOGUE_SERVICE_URL")!; // Retreives URL environment variable from docker-compose.yml file
+            string getCatalogueEndpoint = "/catalogue/getAllArtifacts"; // Specifies with endpoint in CatalogueService to retreive data from
 
             _logger.LogInformation($"UserService - {catalogueServiceUrl + getCatalogueEndpoint}");
             
-            HttpResponseMessage response = await _httpClient.GetAsync(catalogueServiceUrl + getCatalogueEndpoint); // creates the endpoint to retreive data from
+            HttpResponseMessage response = await _httpClient.GetAsync(catalogueServiceUrl + getCatalogueEndpoint); // Creates the endpoint to retreive data from
             if (!response.IsSuccessStatusCode)
             {
                 return StatusCode((int)response.StatusCode, "UserService - Failed to retrieve UserId from UserService");
             }
 
-            var allArtifacts = await response.Content.ReadFromJsonAsync<List<ArtifactDTO>>(); // deserializes the data from the endpoint and retreives all Artifacts in the endpoints db
+            var allArtifacts = await response.Content.ReadFromJsonAsync<List<ArtifactDTO>>(); // Deserializes the data from the endpoint and retreives all Artifacts in the endpoints db
             _logger.LogInformation("UserService - Total Artifacts: " + allArtifacts!.Count);
 
-            List<ArtifactDTO> activeArtifacts = (List<ArtifactDTO>)allArtifacts.Where(s => s.Status == "Active").ToList(); // filters and retreives the Artifacts where the status is NOT equel to "Deleted"
+            List<ArtifactDTO> activeArtifacts = (List<ArtifactDTO>)allArtifacts.Where(s => s.Status == "Active").ToList(); // Filters and retreives the Artifacts where the status is NOT equel to "Deleted"
             _logger.LogInformation("UserService - Total Active Artifacts: " + activeArtifacts.Count);
 
-            List<ArtifactDTO> usersActiveArtifacts = new List<ArtifactDTO>(); // initializes a new list of Artifacts to add the specified users Artifacts to
+            List<ArtifactDTO> usersActiveArtifacts = new List<ArtifactDTO>(); // Initializes a new list of Artifacts to add the specified users Artifacts to
 
-            if (deletedUser == null) // validates specified user
+            if (deletedUser == null) // Validates specified user
             {
                 return BadRequest("UserService - User does not exist");
             }
 
-            for (int i = 0; i < activeArtifacts.Count(); i++) // loops through activeArtifacts to check if the user owns any
+            for (int i = 0; i < activeArtifacts.Count(); i++) // Loops through activeArtifacts to check if the user owns any
             {
                 if (activeArtifacts[i].ArtifactOwner!.UserName == deletedUser.Result.UserName)
                 {
-                    usersActiveArtifacts.Add(activeArtifacts[i]); // adds any Artifacts owned by the User to the list
+                    usersActiveArtifacts.Add(activeArtifacts[i]); // Adds any Artifacts owned by the User to the list
                 }
             }
             _logger.LogInformation("UserService - UsersActiveArtifactsCount: " + usersActiveArtifacts.Count);
             
-            if (usersActiveArtifacts.Count > 0) // checks whether the specified user owns any Artifacts
+            if (usersActiveArtifacts.Count > 0) // Checks whether the specified user owns any Artifacts
             {
                 return BadRequest("UserService - You have active artifacts in the database and therefore cannot delete your user");
             }
@@ -319,18 +253,18 @@ public class UserController : ControllerBase
             {
                 _logger.LogInformation("UserService - User for deletion: " + deletedUser.Result.UserName);
                 
-                foreach (var artifact in allArtifacts) // loops through allArtifacts and sets any, with a matching ArtifactOwner to have a status of 'Deleted'
+                foreach (var artifact in allArtifacts) // Loops through allArtifacts and sets any, with a matching ArtifactOwner to have a status of 'Deleted'
                 {
                     if (artifact.ArtifactOwner!.UserName == deletedUser.Result.UserName)
                     {
                         _logger.LogInformation("UserService - deletedArtifactName: " + artifact.ArtifactName);
-                        string getArtifactDeletionEndpoint = "/catalogue/deleteartifact/" + artifact.ArtifactID; // retreives endpoint to deleteArtifact in CatalogueService
+                        string getArtifactDeletionEndpoint = "/catalogue/deleteartifact/" + artifact.ArtifactID; // Retreives endpoint to deleteArtifact in CatalogueService
                         _logger.LogInformation($"UserService - {catalogueServiceUrl + getArtifactDeletionEndpoint}");
                         HttpResponseMessage deletArtifactResponse = await _httpClient.PutAsync(catalogueServiceUrl + getArtifactDeletionEndpoint, null);
                     }
                 }
 
-                await _userRepository.DeleteUser(userId); // deletes the specified user from the db
+                await _userRepository.DeleteUser(userId); // Deletes the specified user from the db
 
                 return Ok("userController - User deleted");
             }
