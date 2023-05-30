@@ -14,13 +14,13 @@ namespace Model
 		public string? MongoId { get; set; }
 		
 		[BsonElement("UserId")]
-		public int UserId { get; set; }
+		public int? UserId { get; set; }
 
         [BsonElement("UserName")]
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
 
         [BsonElement("UserPassword")]
-        public string UserPassword { get; set; }
+        public string? UserPassword { get; set; }
 
         [BsonElement("UserEmail")]
         public string? UserEmail { get; set; }
@@ -31,6 +31,7 @@ namespace Model
         [BsonElement("UserAddress")]
         public string? UserAddress { get; set; }
 
+		
         public User(int userId, string userName, string userPassword, string userEmail, int userPhone, string userAddress)
         {
 			this.UserId = userId;
@@ -47,4 +48,3 @@ namespace Model
 		}
 	}
 }
-

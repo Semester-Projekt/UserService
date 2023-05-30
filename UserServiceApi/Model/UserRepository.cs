@@ -14,47 +14,27 @@ namespace Model
         
         public UserRepository() // constructor for initializing the UserRepository class with the 
         {
-            string connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING"); // retreives environment varialbe - mongo conn string
+            string connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING")!; // retreives environment varialbe - mongo conn string
             var client = new MongoClient(connectionString); // creates a new mongo client
             var database = client.GetDatabase("User"); // retreives db
             _users = database.GetCollection<User>("Users"); // retreives collection
         }
+
         
-
-        public async Task<User> FindUserByUsernameAndPassword(string userName, string userPassword) // function for finding a user in the db based on UserName and Password
-        {
-            var filter = Builders<User>.Filter.Eq("UserName", userName) & Builders<User>.Filter.Eq("UserPassword", userPassword);
-            return await _users.Find(filter).FirstOrDefaultAsync();
-        }
-
-
-
-
-
         //GET
         public virtual async Task<List<User>> GetAllUsers() // method for retreiving allUsers in the collection
         {
             return await _users.Aggregate().ToListAsync();
         }
 
-        public virtual async Task<User> GetUserById(int userId) // method for retreiving a specific User in the collection
+        public virtual async Task<User> GetUserById(int? userId) // method for retreiving a specific User in the collection
         {
             var filter = Builders<User>.Filter.Eq("UserId", userId);
-            Console.WriteLine("repository - GetUserById");
-            Console.WriteLine("id: " + userId);
-            Console.WriteLine("database: " + _users);
-
             return await _users.Find(filter).FirstOrDefaultAsync();
         }
 
-        public virtual async Task<int> GetNextUserId() // method for retreiving the highest+1 userId in the collection
-        {
-            var lastUser = _users.AsQueryable().OrderByDescending(a => a.UserId).FirstOrDefault(); // retreives allUsers and orders them by userId in descending order
-            return (lastUser != null) ? lastUser.UserId + 1 : 1; // adds 1 to the current highest userId
-        }
 
-
-
+        
 
         
 
@@ -70,7 +50,7 @@ namespace Model
 
 
         //PUT
-        public virtual async Task UpdateUser(int userId, User user) // method for updating specified User attributes
+        public virtual async Task UpdateUser(int? userId, User user) // method for updating specified User attributes
         {
             var filter = Builders<User>.Filter.Eq(a => a.UserId, userId);
             var update = Builders<User>.Update.
@@ -89,7 +69,7 @@ namespace Model
 
 
         //DELETE
-        public virtual async Task DeleteUser(int userId) // method for deleting a User from the collection
+        public virtual async Task DeleteUser(int? userId) // method for deleting a User from the collection
         {
             var filter = Builders<User>.Filter.Eq(a => a.UserId, userId); // retreives the specified userId
             await _users.DeleteOneAsync(filter);

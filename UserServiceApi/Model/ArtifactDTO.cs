@@ -10,7 +10,7 @@ namespace Model
 {
     public class ArtifactDTO
     {
-        // This class works as a Data Transfer Object to receive data from the Artifact-class in CatalogueService
+        // This class works as a Data Transfer Object to receive data from the Artifact class in CatalogueService
 
         [BsonId] // mongo id for a specified ArtifactDTO
         [BsonRepresentation(BsonType.ObjectId)]
@@ -50,11 +50,9 @@ namespace Model
             this.Estimate = estimate;
         }
 
-
         public ArtifactDTO()
         {
 
         }
     }
 }
-
