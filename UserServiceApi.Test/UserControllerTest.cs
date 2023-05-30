@@ -1,4 +1,3 @@
-/*
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -17,13 +16,11 @@ public class UserControllerTests
 {
     private ILogger<UserController> _logger = null!;
     private IConfiguration _configuration = null!;
-    private Mock<UserRepository> _userRepository;
     
     
     [SetUp]
     public void Setup()
     {
-        _userRepository = new Mock<UserRepository>();
         _logger = new Mock<ILogger<UserController>>().Object;
 
         var myConfiguration = new Dictionary<string, string?>
@@ -92,8 +89,4 @@ public class UserControllerTests
 
         return user;
     }
-
-
 }
-
-*/

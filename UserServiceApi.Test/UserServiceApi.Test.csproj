@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UserServiceAPI\UserServiceApi.csproj" />
+    <ProjectReference Include="..\UserServiceApi\UserServiceApi.csproj" />
   </ItemGroup>
 
 </Project>
