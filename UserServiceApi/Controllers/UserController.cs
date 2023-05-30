@@ -33,13 +33,15 @@ public class UserController : ControllerBase
     private readonly ILogger<UserController> _logger;
     private readonly IConfiguration _config;
     private UserRepository _userRepository;
-    
-    public UserController(ILogger<UserController> logger, IConfiguration config, UserRepository userRepository)
+    private HttpClient _httpClient = new HttpClient();
+
+    public UserController(ILogger<UserController> logger, IConfiguration config, UserRepository userRepository, HttpClient httpClient)
     {
         // initializes the controllers constructor with the 3 specified private objects
         _config = config;
         _logger = logger;
         _userRepository = userRepository;
+        _httpClient = httpClient;
 
 
         // Logger host information
@@ -105,27 +107,38 @@ public class UserController : ControllerBase
 
 
     //POST
-    [HttpPost("addNewUser"), DisableRequestSizeLimit] //addnewuser endpoint for adding a new user to the db
+    /*[HttpPost("addNewUser"), DisableRequestSizeLimit] //addnewuser endpoint for adding a new user to the db
     public async Task<IActionResult> AddNewUser([FromBody] User? user)
     {
         _logger.LogInformation("UserService - AddNewUser funk ramt");
+
+        int? latestID = 0;
 
         var allUsers = await _userRepository.GetAllUsers(); //gets all current users from the db
         
         _logger.LogInformation("UserService - total users: " + allUsers.Count);
 
-        int? latestID = await _userRepository.GetNextUserId(); // Gets latest ID in _users + 1
+        //int? latestID = await _userRepository.GetNextUserId(); // Gets latest ID in _users + 1
+        
+        int? lastID = allUsers.OrderByDescending(a => a.UserId).FirstOrDefault()!.UserId;
+        latestID = lastID + 1;
 
-        var newUser = new User // extracts the new user from the request body
+        if (allUsers.Count < 1)
         {
-            UserId = latestID, // sets the newUser ID as the next one in the collection
-            UserName = user!.UserName,
-            UserPassword = user.UserPassword,
-            UserEmail = user.UserEmail,
-            UserPhone = user.UserPhone,
-            UserAddress = user.UserAddress
+            latestID = 1;
+        }
+
+        var newUser = new User(); // extracts the new user from the request body
+        if (user != null)
+        {
+            newUser.UserId = latestID; // sets the newUser ID as the next one in the collection
+            newUser.UserName = user!.UserName;
+            newUser.UserPassword = user.UserPassword;
+            newUser.UserEmail = user.UserEmail;
+            newUser.UserPhone = user.UserPhone;
+            newUser.UserAddress = user.UserAddress;
         };
-        _logger.LogInformation("UserService - Nyt user objekt lavet, name: " + user.UserName);
+        _logger.LogInformation("UserService - Nyt user objekt lavet, name: " + user!.UserName);
 
         _logger.LogInformation("UserService - user mongo id: " + user.MongoId);
         _logger.LogInformation("UserService - newuser mongo id: " + newUser.MongoId);
@@ -135,18 +148,14 @@ public class UserController : ControllerBase
 
         foreach (var bruger in allUsers) // loops through all current users
         {
-            if (bruger.UserName == user.UserName) // if any of them have the requested UserName, converts the bool to true
+            if (bruger.UserName == newUser.UserName) // if any of them have the requested UserName, converts the bool to true
             {
                 userNameTaken = true;
                 break;
             }
         }
 
-        if (newUser.UserId == null) // validates the new users id
-        {
-            return BadRequest("UserService - UserId is null");
-        }
-        else if (userNameTaken)
+        if (userNameTaken)
         {
             return BadRequest("UserService - UserName is taken"); // checks if userName is taken
         }
@@ -158,7 +167,53 @@ public class UserController : ControllerBase
         _logger.LogInformation("UserService - new user object added to _users");
 
         return Ok(newUser); // returns the newUser
+    }*/
+
+    [HttpPost("addNewUser"), DisableRequestSizeLimit]
+    public async Task<IActionResult> AddNewUser([FromBody] User? user)
+    {
+        _logger.LogInformation("UserService - AddNewUser funk ramt");
+
+        var allUsers = await _userRepository.GetAllUsers();
+        _logger.LogInformation("UserService - total users: " + allUsers.Count);
+
+        // Find the maximum user ID from the list of all users, or default to 0 if the list is empty,
+        // then add 1 to get the latest ID for the new user
+        int? latestID = (allUsers.Max(a => (int?)a.UserId) ?? 0) + 1;
+        
+        latestID = allUsers.DefaultIfEmpty().Max(a => a == null ? 0 : a.UserId) + 1;
+
+        var newUser = new User(); // Initialize new User object and validate the request body input
+        if (user != null)
+        {
+            newUser.UserId = latestID;
+            newUser.UserName = user.UserName;
+            newUser.UserPassword = user.UserPassword;
+            newUser.UserEmail = user.UserEmail;
+            newUser.UserPhone = user.UserPhone;
+            newUser.UserAddress = user.UserAddress;
+        }
+        _logger.LogInformation("UserService - New user object created, name: " + newUser.UserName);
+
+        if (newUser.UserId == null)
+        {
+            return BadRequest("UserService - UserId is null");
+        }
+
+        // Check if the new user's username is already taken by comparing it with the usernames of existing users
+        bool userNameTaken = allUsers.Any(u => u.UserName == newUser.UserName);
+        if (userNameTaken)
+        {
+            return BadRequest("UserService - UserName is already taken");
+        }
+        
+        await _userRepository.AddNewUser(newUser); // adds the newUser to _users
+        _logger.LogInformation("UserService - New user object added to _users");
+
+        return Ok(newUser);
     }
+
+
 
 
 
@@ -213,13 +268,13 @@ public class UserController : ControllerBase
 
     //DELETE
     [HttpDelete("deleteUser/{userId}"), DisableRequestSizeLimit] // deleteUser endpoint for deleting a user
-    public async Task<IActionResult> DeleteUser(int userId)
+    public async Task<IActionResult> DeleteUser(int? userId)
     {
         _logger.LogInformation("UserService - DeleteUser function hit");
 
         var deletedUser = _userRepository.GetUserById(userId); // retreives the specified user
 
-        using (HttpClient client = new HttpClient())
+        using (_httpClient = new HttpClient())
         {
             //string catalogueServiceUrl = "http://localhost:4000";
             //string catalogueServiceUrl = "http://catalogue:80";
@@ -227,8 +282,8 @@ public class UserController : ControllerBase
             string getCatalogueEndpoint = "/catalogue/getAllArtifacts"; // specifies with endpoint in CatalogueService to retreive data from
 
             _logger.LogInformation($"UserService - {catalogueServiceUrl + getCatalogueEndpoint}");
-
-            HttpResponseMessage response = await client.GetAsync(catalogueServiceUrl + getCatalogueEndpoint); // creates the endpoint to retreive data from
+            
+            HttpResponseMessage response = await _httpClient.GetAsync(catalogueServiceUrl + getCatalogueEndpoint); // creates the endpoint to retreive data from
             if (!response.IsSuccessStatusCode)
             {
                 return StatusCode((int)response.StatusCode, "UserService - Failed to retrieve UserId from UserService");
@@ -249,7 +304,7 @@ public class UserController : ControllerBase
 
             for (int i = 0; i < activeArtifacts.Count(); i++) // loops through activeArtifacts to check if the user owns any
             {
-                if (activeArtifacts[i].ArtifactOwner.UserName == deletedUser.Result.UserName)
+                if (activeArtifacts[i].ArtifactOwner!.UserName == deletedUser.Result.UserName)
                 {
                     usersActiveArtifacts.Add(activeArtifacts[i]); // adds any Artifacts owned by the User to the list
                 }
@@ -271,11 +326,11 @@ public class UserController : ControllerBase
                         _logger.LogInformation("UserService - deletedArtifactName: " + artifact.ArtifactName);
                         string getArtifactDeletionEndpoint = "/catalogue/deleteartifact/" + artifact.ArtifactID; // retreives endpoint to deleteArtifact in CatalogueService
                         _logger.LogInformation($"UserService - {catalogueServiceUrl + getArtifactDeletionEndpoint}");
-                        HttpResponseMessage deletArtifactResponse = await client.PutAsync(catalogueServiceUrl + getArtifactDeletionEndpoint, null);
+                        HttpResponseMessage deletArtifactResponse = await _httpClient.PutAsync(catalogueServiceUrl + getArtifactDeletionEndpoint, null);
                     }
                 }
 
-                await _userRepository.DeleteUser(userId); // deletes the user from the db
+                await _userRepository.DeleteUser(userId); // deletes the specified user from the db
 
                 return Ok("userController - User deleted");
             }

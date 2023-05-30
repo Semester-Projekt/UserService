@@ -50,11 +50,9 @@ namespace Model
             this.Estimate = estimate;
         }
 
-
         public ArtifactDTO()
         {
 
         }
     }
 }
-
