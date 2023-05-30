@@ -38,44 +38,58 @@ public class UserController : ControllerBase
     public UserController(ILogger<UserController> logger, IConfiguration config, UserRepository userRepository, HttpClient httpClient)
     {
         // Initializes the controllers constructor with the 3 specified private objects
-        _config = config;
         _logger = logger;
+        _config = config;
         _userRepository = userRepository;
         _httpClient = httpClient;
-
-
+        
         // Logger host information
         var hostName = System.Net.Dns.GetHostName();
         var ips = System.Net.Dns.GetHostAddresses(hostName);
         var _ipaddr = ips.First().MapToIPv4().ToString();
         _logger.LogInformation(1, $"UserService - Auth service responding from {_ipaddr}");
-
     }
 
 
+    // VERSION_ENDEPUNKT
     [HttpGet("version")]
     public async Task<Dictionary<string, string>> GetVersion()
     {
+        // Create a dictionary to hold the version properties
         var properties = new Dictionary<string, string>();
+
+        // Get the assembly information of the program
         var assembly = typeof(Program).Assembly;
 
+        // Add the service name to the properties dictionary
         properties.Add("service", "User");
+
+        // Retrieve the product version from the assembly and add it to the properties dictionary
         var ver = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).ProductVersion;
         properties.Add("version", ver!);
 
         try
         {
+            // Get the host name of the current machine
             var hostName = System.Net.Dns.GetHostName();
+
+            // Get the IP addresses associated with the host name
             var ips = await System.Net.Dns.GetHostAddressesAsync(hostName);
+
+            // Retrieve the first IPv4 address and add it to the properties dictionary
             var ipa = ips.First().MapToIPv4().ToString();
             properties.Add("hosted-at-address", ipa);
         }
         catch (Exception ex)
         {
+            // Log and handle any exceptions that occurred during IP address retrieval
             _logger.LogError(ex.Message);
-            properties.Add("hosted-at-address", "Could not resolve IP-address");
+
+            // Add a default message to the properties dictionary if IP address resolution failed
+            properties.Add("hosted-at-address", "Could not resolve IP address");
         }
 
+        // Return the populated properties dictionary
         return properties;
     }
 
@@ -114,10 +128,8 @@ public class UserController : ControllerBase
 
         var allUsers = await _userRepository.GetAllUsers();
         _logger.LogInformation("UserService - total users: " + allUsers.Count);
-
         // Find the maximum user ID from the list of all users, or default to 0 if the list is empty, then add 1 to get the latest ID for the new user
-        int? latestID = (allUsers.Max(a => (int?)a.UserId) ?? 0) + 1;
-        latestID = allUsers.DefaultIfEmpty().Max(a => a == null ? 0 : a.UserId) + 1;
+        int? latestID = allUsers.DefaultIfEmpty().Max(a => a == null ? 0 : a.UserId) + 1;
 
         var newUser = new User(); // Initialize new User object and validate the request body input
         if (user != null)
