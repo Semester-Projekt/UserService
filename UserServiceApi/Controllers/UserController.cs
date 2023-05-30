@@ -48,7 +48,7 @@ public class UserController : ControllerBase
         var hostName = System.Net.Dns.GetHostName();
         var ips = System.Net.Dns.GetHostAddresses(hostName);
         var _ipaddr = ips.First().MapToIPv4().ToString();
-        _logger.LogInformation(1, $"Auth service responding from {_ipaddr}");
+        _logger.LogInformation(1, $"UserService - Auth service responding from {_ipaddr}");
 
     }
 
@@ -240,7 +240,7 @@ public class UserController : ControllerBase
 
         foreach (var bruger in allUsers) // loops through all current users
         {
-            if (bruger.UserName == user.UserName) // if any of them have the requested UserName, converts the bool to true
+            if (bruger.UserName == user!.UserName) // if any of them have the requested UserName, converts the bool to true
             {
                 userNameTaken = true;
                 break;
@@ -249,7 +249,7 @@ public class UserController : ControllerBase
         
         if (userNameTaken) // checks if userName is taken
         {
-            return BadRequest($"UserService - Cannot change UserName to {user.UserName}. UserName is already taken");
+            return BadRequest($"UserService - Cannot change UserName to {user!.UserName}. UserName is already taken");
         }
         else
         {
@@ -278,7 +278,7 @@ public class UserController : ControllerBase
         {
             //string catalogueServiceUrl = "http://localhost:4000";
             //string catalogueServiceUrl = "http://catalogue:80";
-            string catalogueServiceUrl = Environment.GetEnvironmentVariable("CATALOGUE_SERVICE_URL"); // retreives URL environment variable from docker-compose.yml file
+            string catalogueServiceUrl = Environment.GetEnvironmentVariable("CATALOGUE_SERVICE_URL")!; // retreives URL environment variable from docker-compose.yml file
             string getCatalogueEndpoint = "/catalogue/getAllArtifacts"; // specifies with endpoint in CatalogueService to retreive data from
 
             _logger.LogInformation($"UserService - {catalogueServiceUrl + getCatalogueEndpoint}");
@@ -321,7 +321,7 @@ public class UserController : ControllerBase
                 
                 foreach (var artifact in allArtifacts) // loops through allArtifacts and sets any, with a matching ArtifactOwner to have a status of 'Deleted'
                 {
-                    if (artifact.ArtifactOwner.UserName == deletedUser.Result.UserName)
+                    if (artifact.ArtifactOwner!.UserName == deletedUser.Result.UserName)
                     {
                         _logger.LogInformation("UserService - deletedArtifactName: " + artifact.ArtifactName);
                         string getArtifactDeletionEndpoint = "/catalogue/deleteartifact/" + artifact.ArtifactID; // retreives endpoint to deleteArtifact in CatalogueService

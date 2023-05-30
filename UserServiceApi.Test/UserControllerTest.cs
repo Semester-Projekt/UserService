@@ -22,8 +22,10 @@ public class UserControllerTests
     [SetUp]
     public void Setup()
     {
+        // Mock ILogger for UserController
         _logger = new Mock<ILogger<UserController>>().Object;
 
+        // Mock IConfiguration using in-memory configuration values
         var myConfiguration = new Dictionary<string, string?>
     {
         {"Issuer", "megalangsuperdupertestSecret"},

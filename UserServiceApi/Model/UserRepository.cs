@@ -14,7 +14,7 @@ namespace Model
         
         public UserRepository() // constructor for initializing the UserRepository class with the 
         {
-            string connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING"); // retreives environment varialbe - mongo conn string
+            string connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING")!; // retreives environment varialbe - mongo conn string
             var client = new MongoClient(connectionString); // creates a new mongo client
             var database = client.GetDatabase("User"); // retreives db
             _users = database.GetCollection<User>("Users"); // retreives collection
@@ -32,7 +32,7 @@ namespace Model
             var filter = Builders<User>.Filter.Eq("UserId", userId);
             return await _users.Find(filter).FirstOrDefaultAsync();
         }
-
+        
         public virtual async Task<int?> GetNextUserId() // method for retreiving the highest+1 userId in the collection
         {
             var lastUser = _users.AsQueryable().OrderByDescending(a => a.UserId).FirstOrDefault(); // retreives allUsers and orders them by userId in descending order
