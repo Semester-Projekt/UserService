@@ -31,6 +31,7 @@ namespace Model
         [BsonElement("UserAddress")]
         public string? UserAddress { get; set; }
 
+		
         public User(int userId, string userName, string userPassword, string userEmail, int userPhone, string userAddress)
         {
 			this.UserId = userId;
@@ -47,4 +48,3 @@ namespace Model
 		}
 	}
 }
-
