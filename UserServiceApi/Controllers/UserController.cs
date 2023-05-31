@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using System.IO;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 
 namespace Controllers;
 
@@ -96,6 +97,7 @@ public class UserController : ControllerBase
 
 
     // GET
+    [Authorize]
     [HttpGet("getuser/{userId}"), DisableRequestSizeLimit] // Getuser endpoint to retreive a specific user from the db
     public async Task<IActionResult> GetUserById(int userId)
     {
@@ -169,6 +171,7 @@ public class UserController : ControllerBase
 
 
     // PUT
+    [Authorize]
     [HttpPut("updateUser/{userId}"), DisableRequestSizeLimit] // UpdateUser endpoint for updating desired user
     public async Task<IActionResult> UpdateUser(int userId, User? user)
     {
@@ -215,6 +218,7 @@ public class UserController : ControllerBase
 
 
     // DELETE
+    [Authorize]
     [HttpDelete("deleteUser/{userId}"), DisableRequestSizeLimit] // DeleteUser endpoint for deleting a user
     public async Task<IActionResult> DeleteUser(int? userId)
     {
@@ -228,13 +232,24 @@ public class UserController : ControllerBase
             string getCatalogueEndpoint = "/catalogue/getAllArtifacts"; // Specifies with endpoint in CatalogueService to retreive data from
 
             _logger.LogInformation($"UserService - {catalogueServiceUrl + getCatalogueEndpoint}");
+
+            // Retrieve the current user's token from the request
+            var tokenValue = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            _logger.LogInformation("CatalogueService - token first default: " + tokenValue);
+            var token = tokenValue?.Replace("Bearer ", "");
+            _logger.LogInformation("CatalogueService - token w/o bearer: " + token);
+
+            // Create a new HttpRequestMessage to include the token
+            var request = new HttpRequestMessage(HttpMethod.Get, catalogueServiceUrl + getCatalogueEndpoint);
+            //request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             
-            HttpResponseMessage response = await _httpClient.GetAsync(catalogueServiceUrl + getCatalogueEndpoint); // Creates the endpoint to retreive data from
+            HttpResponseMessage response = await _httpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode)
             {
                 return StatusCode((int)response.StatusCode, "UserService - Failed to retrieve UserId from UserService");
             }
-
+            
             var allArtifacts = await response.Content.ReadFromJsonAsync<List<ArtifactDTO>>(); // Deserializes the data from the endpoint and retreives all Artifacts in the endpoints db
             _logger.LogInformation("UserService - Total Artifacts: " + allArtifacts!.Count);
 

@@ -76,7 +76,7 @@ public class UserControllerTests
 
     // UNIT TEST AF AddNewUser
     [Test]
-    public async Task VALID_TestAddUser_UserName_Not_Taken_ReturnsOkObjectResult()
+    public async Task VALID_TestAddUser_ReturnsOkObjectResult()
     {
         // Arrange
         // Creates 2 separate users with different values
