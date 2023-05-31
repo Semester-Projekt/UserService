@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using RabbitMQ.Client.Exceptions;
 using Moq.Protected;
 using System.Net;
+using Microsoft.AspNetCore.Http;
 
 namespace UserServiceApi.Test;
 
@@ -76,7 +77,7 @@ public class UserControllerTests
 
     // UNIT TEST AF AddNewUser
     [Test]
-    public async Task VALID_TestAddUser_UserName_Not_Taken_ReturnsOkObjectResult()
+    public async Task VALID_TestAddUser_ReturnsOkObjectResult()
     {
         // Arrange
         // Creates 2 separate users with different values
