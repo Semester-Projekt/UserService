@@ -97,6 +97,23 @@ public class UserController : ControllerBase
 
 
     // GET
+    [HttpGet("getallusers"), DisableRequestSizeLimit]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        _logger.LogInformation("UserService - getallusers function hit");
+
+        var allUsers = _userRepository.GetAllUsers().Result;
+
+        _logger.LogInformation("UserService - Total Users: " + allUsers.Count());
+
+        if (allUsers == null)
+        {
+            return BadRequest("UserService - User list is empty");
+        }
+
+        return Ok(allUsers);
+    }
+
     [HttpGet("getuser/{userId}"), DisableRequestSizeLimit] // Getuser endpoint to retreive a specific user from the db
     public async Task<IActionResult> GetUserById(int userId)
     {
