@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using RabbitMQ.Client.Exceptions;
 using Moq.Protected;
 using System.Net;
+using Microsoft.AspNetCore.Http;
 
 namespace UserServiceApi.Test;
 
@@ -203,6 +204,8 @@ public class UserControllerTests
 
         var allUsers = new List<User> { seedUser }; // Initializes a list of users with the seedUser
 
+        var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IkRhbmllbCIsImV4cCI6MTY4ODExNDk0NCwiaXNzIjoibWVnYWxhbmdzdXBlcmR1cGVydGVzdElzc3VlciIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3QifQ.6t_GQOVA9f8LDsz - GkKDARhtNXJ52MZC2xSm2Z_XKSE";
+
         // Mocks both the UserRepository and an HttpClient
         var mockRepo = new Mock<UserRepository>();
         var mockHttp = new Mock<HttpClient>();
@@ -218,6 +221,9 @@ public class UserControllerTests
         // Initializes the controller with the necessary values from the UserController constructor
         var controller = new UserController(_logger, _configuration, mockRepo.Object, mockHttp.Object);
 
+        controller.ControllerContext.HttpContext = new DefaultHttpContext();
+        controller.ControllerContext.HttpContext.Request.Headers["Authorization"] = "Bearer " + token;
+        
 
         // Act
         var result = await controller.DeleteUser(seedUser.UserId); // Awaits and then calls the 'mocked' DeleteUser function
