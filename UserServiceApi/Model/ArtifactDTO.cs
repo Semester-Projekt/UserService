@@ -17,7 +17,7 @@ namespace Model
         public string? MongoId { get; set; }
 
         [BsonElement("ArtifactID")]
-        public int ArtifactID { get; set; }
+        public int? ArtifactID { get; set; }
 
         [BsonElement("ArtifactName")]
         public string? ArtifactName { get; set; }
