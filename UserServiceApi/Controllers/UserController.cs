@@ -97,7 +97,6 @@ public class UserController : ControllerBase
 
 
     // GET
-    [Authorize]
     [HttpGet("getuser/{userId}"), DisableRequestSizeLimit] // Getuser endpoint to retreive a specific user from the db
     public async Task<IActionResult> GetUserById(int userId)
     {
