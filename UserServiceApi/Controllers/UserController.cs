@@ -188,7 +188,7 @@ public class UserController : ControllerBase
 
     // PUT
     [Authorize]
-    [HttpPut("updateUser/{userId}"), DisableRequestSizeLimit] // UpdateUser endpoint for updating desired user
+    [HttpPut("updateUser/{userName}"), DisableRequestSizeLimit] // UpdateUser endpoint for updating desired user
     public async Task<IActionResult> UpdateUser(string userName, User? user)
     {
         _logger.LogInformation("UserService - UpdateUser function hit");
