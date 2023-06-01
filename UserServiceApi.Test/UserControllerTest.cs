@@ -211,7 +211,7 @@ public class UserControllerTests
         // Mocks the both the GetAllUsers, the DeleteUser, and the GetUserById functions and defines the desired return types of those methods
         mockRepo.Setup(svc => svc.GetAllUsers()).ReturnsAsync(allUsers);
         mockRepo.Setup(svc => svc.DeleteUser(seedUser.UserId)).Returns(Task.FromResult<string>("userController - User deleted"));
-        mockRepo.Setup(repo => repo.GetUserById(seedUser.UserId)).ReturnsAsync(seedUser);
+        mockRepo.Setup(repo => repo.GetUserByUserName(seedUser.UserName!)).ReturnsAsync(seedUser);
 
         Console.WriteLine("SeedUserName: " + seedUser.UserName);
         Console.WriteLine("AllUserName.first: " + allUsers.FirstOrDefault()!.UserName);
@@ -221,7 +221,7 @@ public class UserControllerTests
 
 
         // Act
-        var result = await controller.DeleteUser(seedUser.UserId); // Awaits and then calls the 'mocked' DeleteUser function
+        var result = await controller.DeleteUser(seedUser.UserName); // Awaits and then calls the 'mocked' DeleteUser function
 
 
         // Assert
