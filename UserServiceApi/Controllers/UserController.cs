@@ -234,6 +234,7 @@ public class UserController : ControllerBase
 
 
     // DELETE
+    [Authorize]
     [HttpDelete("deleteUser/{userName}"), DisableRequestSizeLimit] // DeleteUser endpoint for deleting a user
     public async Task<IActionResult> DeleteUser(string? userName)
     {
