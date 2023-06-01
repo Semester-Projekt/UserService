@@ -27,9 +27,9 @@ namespace Model
             return await _users.Aggregate().ToListAsync();
         }
 
-        public virtual async Task<User> GetUserById(int? userId) // method for retreiving a specific User in the collection
+        public virtual async Task<User> GetUserByUserName(string userName) // method for retreiving a specific User in the collection
         {
-            var filter = Builders<User>.Filter.Eq("UserId", userId);
+            var filter = Builders<User>.Filter.Eq("UserName", userName);
             return await _users.Find(filter).FirstOrDefaultAsync();
         }
 
@@ -50,9 +50,9 @@ namespace Model
 
 
         //PUT
-        public virtual async Task UpdateUser(int? userId, User user) // method for updating specified User attributes
+        public virtual async Task UpdateUser(string? userName, User user) // method for updating specified User attributes
         {
-            var filter = Builders<User>.Filter.Eq(a => a.UserId, userId);
+            var filter = Builders<User>.Filter.Eq(a => a.UserName, userName);
             var update = Builders<User>.Update.
                 // updates desired attributes
                 Set(a => a.UserName, user.UserName).
