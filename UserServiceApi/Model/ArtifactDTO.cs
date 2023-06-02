@@ -35,7 +35,7 @@ namespace Model
         public int? Estimate { get; set; }
 
         [BsonElement("ArtifactPicture")]
-        public byte[]? ArtifactPicture { get; set; } = null;
+        public byte[]? ArtifactPicture { get; set; } = null; // Represents the BSON element "ArtifactPicture" in MongoDB as a byte array (binary data).
 
         [BsonElement("Status")] // new artifact are initialised as pending and awaiting auction
         public string? Status { get; set; } = "Pending";
