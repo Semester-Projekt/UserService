@@ -25,7 +25,7 @@
       "description": "The code representing the category of the artifact."
     },
     "ArtifactOwner": {
-      "$ref": "User.json",
+      "$ref": "UserSchema.json",
       "description": "A user object representing the owner of the artifact."
     },
     "Estimate": {

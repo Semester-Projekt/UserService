@@ -1,5 +1,4 @@
-﻿// Usings
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Model;
@@ -26,8 +25,7 @@ using System.Net.Http.Headers;
 
 namespace Controllers;
 
-[ApiController] // Api controller to handle api calls
-[Route("[controller]")] // Controller name set as default http endpoint name
+[Route("[controller]")]
 public class UserController : ControllerBase
 {
     // Creates 3 instances, 1 for a logger, one for a config, 1 for an instance of the userRepository.cs class
@@ -38,7 +36,6 @@ public class UserController : ControllerBase
 
     public UserController(ILogger<UserController> logger, IConfiguration config, UserRepository userRepository, HttpClient httpClient)
     {
-        // Initializes the controllers constructor with the 3 specified private objects
         _logger = logger;
         _config = config;
         _userRepository = userRepository;
@@ -102,7 +99,7 @@ public class UserController : ControllerBase
     {
         _logger.LogInformation("UserService - getallusers function hit");
 
-        var allUsers = _userRepository.GetAllUsers().Result;
+        var allUsers = await _userRepository.GetAllUsers();
 
         _logger.LogInformation("UserService - Total Users: " + allUsers.Count());
 
@@ -114,14 +111,12 @@ public class UserController : ControllerBase
         return Ok(allUsers);
     }
 
-    [HttpGet("getuser/{userName}"), DisableRequestSizeLimit] // Getuser endpoint to retreive a specific user from the db
+    [HttpGet("getuser/{userName}"), DisableRequestSizeLimit]
     public async Task<IActionResult> GetUserByUserName(string userName)
     {
         _logger.LogInformation("UserService - getUser function hit");
 
-        _logger.LogInformation("UserService - userId: " + userName);
-
-        var user = await _userRepository.GetUserByUserName(userName); // Gets user from collection using repository method
+        var user = await _userRepository.GetUserByUserName(userName);
 
         if (user == null)
         {
@@ -130,7 +125,7 @@ public class UserController : ControllerBase
 
         _logger.LogInformation("UserService - after loading user: " + user.UserName);
 
-        return Ok(user); // Returns an OK statuscode, along with the entire user object
+        return Ok(user);
     }
 
 
@@ -173,7 +168,7 @@ public class UserController : ControllerBase
             return BadRequest("UserService - UserName is already taken");
         }
 
-        await _userRepository.AddNewUser(newUser); // Adds the newUser to _users
+        await _userRepository.AddNewUser(newUser);
         _logger.LogInformation("UserService - New user object added to _users");
 
         return Ok(newUser);
@@ -188,7 +183,7 @@ public class UserController : ControllerBase
 
     // PUT
     [Authorize]
-    [HttpPut("updateUser/{userName}"), DisableRequestSizeLimit] // UpdateUser endpoint for updating desired user
+    [HttpPut("updateUser/{userName}"), DisableRequestSizeLimit]
     public async Task<IActionResult> UpdateUser(string userName, User? user)
     {
         _logger.LogInformation("UserService - UpdateUser function hit");
